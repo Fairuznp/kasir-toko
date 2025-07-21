@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('stoks', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('produk_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('nama_suplier');
+            $table->unsignedInteger('jumlah');
+            $table->date('tanggal');
         });
     }
 
