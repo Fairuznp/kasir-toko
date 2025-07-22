@@ -11,6 +11,7 @@
             <x-nav-item title="Produk" icon="fas fa-box-open" :routes="['produk.index', 'produk.create', 'produk.edit']"/>
             <x-nav-item title="Stok" icon="fas fa-pallet" :routes="['stok.index', 'stok.create', 'stok.edit']"/>
             <x-nav-item title="Transaksi" icon="fas fa-cash-register" :routes="['transaksi.index', 'transaksi.create', 'transaksi.show']"/>
+            <x-nav-item title="Laporan" icon="fas fa-print" :routes="['laporan.index']"/>
             @can('admin')
             <x-nav-item title="Kategori" icon="fas fa-list" :routes="['kategori.index', 'kategori.create', 'kategori.edit']" />
             <x-nav-item title="User" icon="fas fa-user-tie" :routes="['user.index', 'user.create', 'user.edit']" />
