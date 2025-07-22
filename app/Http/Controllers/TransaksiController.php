@@ -63,7 +63,7 @@ class TransaksiController extends Controller
 
         $penjualan = Penjualan::create([
             'user_id' => $user->id,
-            'pelanggan_id' => $cart->getExtraInfo('pelanggan_id'),
+            'pelanggan_id' => $cart->getExtraInfo('pelanggan')['id'],
             'nomor_transaksi' => date('Ymd') . $no,
             'tanggal' => date('Y-m-d H:i:s'),
             'total' => $total,
