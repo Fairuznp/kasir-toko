@@ -50,6 +50,7 @@
             <div class="col-2 offset-6">
                 <p>Total</p>
                 <p>Pajak 10 %</p>
+                <p>Diskon</p>
                 <p>Total Bayar</p>
             </div>
             <div class="col-4 text-right">
