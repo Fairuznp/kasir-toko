@@ -19,28 +19,68 @@ class CartController extends Controller
             'title' => 'Pajak PPN 10%'
         ]);
 
-        return $cart->getDetails()->toJson();
+        $cartDetails = $cart->getDetails();
+        $extraInfo = $cart->getExtraInfo();
+
+        // Hitung diskon jika ada
+        $discountAmount = 0;
+        if (isset($extraInfo['diskon'])) {
+            $discountAmount = $extraInfo['diskon']['nilai_diskon'];
+        }
+
+        // Buat response dengan discount_amount
+        $response = $cartDetails->toArray();
+        $response['discount_amount'] = $discountAmount;
+
+        // Hitung ulang total setelah diskon
+        if ($discountAmount > 0) {
+            $response['total'] = $response['total'] - $discountAmount;
+        }
+
+        return response()->json($response);
     }
 
     public function store(Request $request)
     {
+        // Validasi input
         $request->validate([
-            'kode_produk' => ['required', 'exists:produks']
+            'kode_produk' => ['required', 'exists:produks,kode_produk'],
+            'quantity' => ['nullable', 'integer', 'min:1']
         ]);
 
+        // Ambil produk dari database
         $produk = Produk::where('kode_produk', $request->kode_produk)->first();
 
+        if (!$produk) {
+            return response()->json(['message' => 'Produk tidak ditemukan.'], 404);
+        }
+
+        // Ambil quantity dari input atau default ke 1
+        $qty = (int) $request->input('quantity', 1);
+        $qty = max(1, $qty); // Untuk berjaga-jaga
+
+        // Ambil cart berdasarkan user ID
         $cart = Cart::name($request->user()->id);
 
+        // Tambahkan ke cart
         $cart->addItem([
             'id' => $produk->id,
             'title' => $produk->nama_produk,
-            'quantity' => 1,
+            'quantity' => $qty,
             'price' => $produk->harga
         ]);
 
-        return response()->json(['message' => 'Berhasil ditambahkan.']);
+        return response()->json([
+            'message' => 'Produk berhasil ditambahkan ke keranjang.',
+            'item' => [
+                'kode_produk' => $request->kode_produk,
+                'nama_produk' => $produk->nama_produk,
+                'quantity' => $qty,
+                'harga' => $produk->harga
+            ]
+        ]);
     }
+
 
     public function update(Request $request, $hash)
     {

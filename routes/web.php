@@ -10,6 +10,7 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\StokController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiskonController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\LaporanController;
 use App\Models\Kategori;
@@ -54,4 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('stok', StokController::class)->only('index', 'create', 'store', 'destroy');
     Route::resource('produk', ProdukController::class);
     Route::resource('kategori', KategoriController::class)->middleware('can:admin');
+    Route::get('/produk/qrcode/{kode}', [App\Http\Controllers\ProdukController::class, 'downloadQr'])->name('produk.qr.download');
+    Route::resource('diskon', DiskonController::class);
+    Route::post('terapkan-diskon', [DiskonController::class, 'terapkanDiskon'])->name('diskon.terapkan');
 });

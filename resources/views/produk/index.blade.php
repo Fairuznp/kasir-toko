@@ -47,6 +47,7 @@
                     <tr>
                         <th>#</th>
                         <th>Kode</th>
+                        <th>QR CODE</th>
                         <th>Nama Produk</th>
                         <th>Kategori</th>
                         <th>Harga</th>
@@ -59,6 +60,14 @@
                         <tr>
                             <td>{{ $produks->firstItem() + $key }}</td>
                             <td>{{ $produk->kode_produk }}</td>
+                            <td class="text-center">
+{!! QrCode::format('svg')->size(70)->generate($produk->kode_produk) !!}
+    <br>
+    <a href="{{ route('produk.qr.download', $produk->kode_produk) }}" class="btn btn-sm btn-outline-primary mt-1">
+        Download
+    </a>
+</td>
+
                             <td>{{ $produk->nama_produk }}</td>
                             <td>{{ $produk->nama_kategori }}</td>
                             <td>{{ $produk->harga }}</td>

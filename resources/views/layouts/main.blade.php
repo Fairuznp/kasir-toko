@@ -6,6 +6,7 @@
     <title>{{ config('app.name') }}{{ isset($title) ? ' | ' . $title : '' }}</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="/adminlte/plugins/fontawesome-free/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link rel="stylesheet" href="/adminlte/dist/css/adminlte.min.css?v=3.2.0">
     @stack('styles')
 </head>

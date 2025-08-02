@@ -67,6 +67,7 @@
                 <div class="col-6 offset-6 text-right">
                     <p>Sub Total : {{ number_format($penjualan->subtotal, 0, ',', '.') }}</p>
                     <p>Pajak 10% : {{ number_format($penjualan->pajak, 0, ',', '.') }}</p>
+                    <p>Diskon : - {{ number_format($penjualan->nilai_diskon, 0, ',', '.') }}</p>
                     <p>Total : {{ number_format($penjualan->total, 0, ',', '.') }}</p>
                     <p>Cash : {{ number_format($penjualan->tunai, 0, ',', '.') }}</p>
                     <p>Kembalian : {{ number_format($penjualan->kembalian, 0, ',', '.') }}</p>

@@ -22,5 +22,12 @@ class Penjualan extends Model
         'status',
         'subtotal',
         'pajak',
+        'diskon_id',
+        'nilai_diskon',
     ];
+
+    public function diskon()
+    {
+        return $this->belongsTo(Diskon::class);
+    }
 }

@@ -14,6 +14,7 @@
             <x-nav-item title="Laporan" icon="fas fa-print" :routes="['laporan.index']"/>
             @can('admin')
             <x-nav-item title="Kategori" icon="fas fa-list" :routes="['kategori.index', 'kategori.create', 'kategori.edit']" />
+            <x-nav-item title="Diskon" icon="fas fa-tags" :routes="['diskon.index', 'diskon.create', 'diskon.edit']"/>
             <x-nav-item title="User" icon="fas fa-user-tie" :routes="['user.index', 'user.create', 'user.edit']" />
             @endcan
         </ul>

@@ -45,15 +45,35 @@
                 </tr>
             </tbody>
         </table>
+ <!-- Form Diskon -->
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Kode Diskon</label>
+                    <div class="input-group">
+                        <input type="text" id="kodeDiskon" class="form-control" placeholder="Masukkan kode diskon">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-info" onclick="terapkanDiskon()">
+                                <i class="fas fa-check mr-1"></i> Terapkan
+                            </button>
+                        </div>
+                    </div>
+                    <div id="diskonError" class="text-danger mt-2" style="display: none;"></div>
+                    <div id="diskonSuccess" class="text-success mt-2" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
 
         <div class="row mt-3">
             <div class="col-2 offset-6">
-                <p>Total</p>
+                <p>Subtotal</p>
+                <p id="diskonLabel" style="display: none;">Diskon</p>
                 <p>Pajak 10 %</p>
                 <p>Total Bayar</p>
             </div>
             <div class="col-4 text-right">
                 <p id="subtotal">0</p>
+                <p id="diskonAmount" style="display: none;">0</p>
                 <p id="taxAmount">0</p>
                 <p id="total">0</p>
             </div>
@@ -93,8 +113,7 @@
     $(function() {
         fetchCart();
     });
-
-    function fetchCart() {
+  function fetchCart() {
         $.getJSON("/cart", function(response) {
             $('#resultCart').empty();
 
@@ -103,7 +122,8 @@
                 subtotal,
                 tax_amount,
                 total,
-                extra_info
+                extra_info,
+                discount_amount
             } = response;
 
             $('#subtotal').html(rupiah(subtotal));
@@ -111,11 +131,19 @@
             $('#total, #totalJumlah').html(rupiah(total));
             $('#totalBayar').val(total);
 
+            // Tampilkan diskon jika ada
+            if (discount_amount > 0) {
+                $('#diskonLabel, #diskonAmount').show();
+                $('#diskonAmount').html('- ' + rupiah(discount_amount));
+            } else {
+                $('#diskonLabel, #diskonAmount').hide();
+            }
+
             if (Array.isArray(items)) {
                 $('#resultCart').html(`<tr><td colspan="5" class="text-center">Tidak ada data.</td></tr>`);
             }
 
-            if (!Array.isArray(extra_info)) {
+            if (extra_info && extra_info.pelanggan) {
                 const { id, nama } = extra_info.pelanggan;
                 $('#namaPelanggan').val(nama);
                 $('#pelangganId').val(id);
@@ -126,7 +154,6 @@
             }
         });
     }
-
     function addRow(item) {
         const {
             hash,
@@ -182,6 +209,46 @@
                 fetchCart();
             }
         });
+    }
+    function terapkanDiskon() {
+        const kodeDiskon = $('#kodeDiskon').val();
+        
+        if (!kodeDiskon) {
+            showDiskonError('Masukkan kode diskon');
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/terapkan-diskon",
+            data: { 
+                kode_diskon: kodeDiskon,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    showDiskonSuccess(response.message);
+                    fetchCart(); // Refresh cart
+                } else {
+                    showDiskonError(response.message);
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                showDiskonError(response.message || 'Terjadi kesalahan');
+            }
+        });
+    }
+
+    function showDiskonError(message) {
+        $('#diskonError').text(message).show();
+        $('#diskonSuccess').hide();
+    }
+
+    function showDiskonSuccess(message) {
+        $('#diskonSuccess').text(message).show();
+        $('#diskonError').hide();
     }
 </script>
 @endpush

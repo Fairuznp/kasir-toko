@@ -4,8 +4,12 @@
     <i class="fas fa-cash-register mr-2"></i>
     Transaksi
 @endsection
-
 @section('content')
+ @if ($errors->has('stok'))
+    <x-alert type="danger">
+        <strong>Stok tidak mencukupi:</strong> {{ $errors->first('stok') }}
+    </x-alert>
+@endif
 <div class="row">
     <div class="col-4">
         @include('transaksi.form-code')

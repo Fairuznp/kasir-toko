@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use App\Models\Kategori;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Response;
 
 class ProdukController extends Controller
 {
@@ -103,5 +105,19 @@ class ProdukController extends Controller
         $produk->delete();
 
         return back()->with('destroy', 'success');
+    }
+
+    public function downloadQr($kode)
+    {
+        // Generate QR Code dalam format SVG
+        $qr = QrCode::format('svg')->size(300)->generate($kode);
+
+        // Nama file yang akan diunduh
+        $filename = 'qr-' . $kode . '.svg';
+
+        // Kirim response dengan header download
+        return response($qr)
+            ->header('Content-Type', 'image/svg+xml') // Lebih eksplisit MIME type-nya
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 }
