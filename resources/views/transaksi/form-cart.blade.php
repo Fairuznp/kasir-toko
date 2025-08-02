@@ -69,7 +69,6 @@
                 <p>Subtotal</p>
                 <p id="diskonLabel" style="display: none;">Diskon</p>
                 <p>Pajak 10 %</p>
-                <p>Diskon</p>
                 <p>Total Bayar</p>
             </div>
             <div class="col-4 text-right">

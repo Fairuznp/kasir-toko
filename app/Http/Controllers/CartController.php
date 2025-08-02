@@ -22,10 +22,22 @@ class CartController extends Controller
         $cartDetails = $cart->getDetails();
         $extraInfo = $cart->getExtraInfo();
 
-        // Hitung diskon jika ada
+        // Hitung diskon jika ada dan valid
         $discountAmount = 0;
         if (isset($extraInfo['diskon'])) {
-            $discountAmount = $extraInfo['diskon']['nilai_diskon'];
+            $diskon = \App\Models\Diskon::find($extraInfo['diskon']['id']);
+
+            if ($diskon) {
+                $validation = $diskon->isValid($cartDetails->get('subtotal'), $cartDetails->get('items'));
+
+                if ($validation['valid']) {
+                    $discountAmount = $diskon->hitungNilaiDiskon($cartDetails->get('subtotal'), $cartDetails->get('items'));
+                } else {
+                    // Diskon tidak valid lagi, hapus dari extra_info
+                    unset($extraInfo['diskon']);
+                    $cart->setExtraInfo($extraInfo);
+                }
+            }
         }
 
         // Buat response dengan discount_amount

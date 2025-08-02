@@ -86,13 +86,36 @@ class Diskon extends Model
 
         return ['valid' => true, 'message' => 'Diskon berhasil diterapkan'];
     }
-
-    public function hitungNilaiDiskon($subtotal)
+    public function hitungNilaiDiskon($subtotal, $items = [])
     {
-        if ($this->jenis_diskon == 'persen') {
-            return ($subtotal * $this->jumlah_diskon) / 100;
+        $subtotalDiskon = 0;
+
+        // Hitung subtotal hanya dari produk yang cocok
+        if ($this->kategori_id || $this->produk_id) {
+            foreach ($items as $item) {
+                // Ambil produk dari database
+                $produk = \App\Models\Produk::find($item->id);
+                if (!$produk) continue;
+
+                // Cek kecocokan kategori atau produk
+                $kategoriMatch = $this->kategori_id && $produk->kategori_id == $this->kategori_id;
+                $produkMatch = $this->produk_id && $produk->id == $this->produk_id;
+
+                if ($kategoriMatch || $produkMatch) {
+                    $subtotalDiskon += $item->price * $item->quantity;
+                }
+            }
+        } else {
+            // Jika diskon berlaku umum
+            $subtotalDiskon = $subtotal;
         }
 
-        return $this->jumlah_diskon;
+        // Hitung diskon berdasarkan subtotalDiskon
+        if ($this->jenis_diskon === 'persen') {
+            return round(($subtotalDiskon * $this->jumlah_diskon) / 100);
+        }
+
+        // Nominal: pastikan tidak lebih besar dari subtotal
+        return min($this->jumlah_diskon, $subtotalDiskon);
     }
 }

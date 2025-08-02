@@ -104,7 +104,7 @@ class DiskonController extends Controller
             return response()->json(['success' => false, 'message' => $validation['message']], 400);
         }
 
-        $nilaiDiskon = $diskon->hitungNilaiDiskon($subtotal);
+        $nilaiDiskon = $diskon->hitungNilaiDiskon($subtotal, $items);
 
         // Simpan diskon ke cart extra info
         $extraInfo = $cart->getExtraInfo();
