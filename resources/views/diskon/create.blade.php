@@ -12,18 +12,20 @@
                 
                 <!-- Card Header -->
                 <div class="card-header bg-white border-bottom">
-                    <h3 class="card-title">
-                        <i class="fas fa-plus-circle mr-2"></i>Form Tambah Diskon Baru
-                    </h3>
-                    <div class="card-tools">
-                        <span class="badge">Required Fields</span>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                        <h3 class="card-title mb-2 mb-md-0">
+                            <i class="fas fa-plus-circle mr-2"></i>Form Tambah Diskon Baru
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge">Required Fields</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card-body p-4">
+                <div class="card-body p-3 p-md-4">
                     {{-- Baris 1: Kode & Jenis Diskon --}}
-                    <div class="row mb-4">
-                        <div class="col-md-6">
+                    <div class="row mb-3 mb-md-4">
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
                             <div class="form-group">
                                 <label class="font-weight-semibold text-dark">
                                     <i class="fas fa-code text-orange mr-1"></i>Kode Diskon 
@@ -41,7 +43,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label class="font-weight-semibold text-dark">
                                     <i class="fas fa-percentage text-success mr-1"></i>Jenis Diskon 
@@ -66,8 +68,8 @@
                     </div>
 
                     {{-- Baris 2: Jumlah & Minimal Pembelian --}}
-                    <div class="row mb-4">
-                        <div class="col-md-6">
+                    <div class="row mb-3 mb-md-4">
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
                             <div class="form-group">
                                 <label class="font-weight-semibold text-dark">
                                     <i class="fas fa-calculator text-warning mr-1"></i>Jumlah Diskon 
@@ -85,7 +87,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label class="font-weight-semibold text-dark">
                                     <i class="fas fa-coins text-info mr-1"></i>Minimal Pembelian
@@ -108,8 +110,8 @@
                     </div>
 
                     {{-- Baris 3: Tanggal Mulai & Selesai --}}
-                    <div class="row mb-4">
-                        <div class="col-md-6">
+                    <div class="row mb-3 mb-md-4">
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
                             <div class="form-group">
                                 <label class="font-weight-semibold text-dark">
                                     <i class="fas fa-calendar-plus text-success mr-1"></i>Tanggal Mulai 
@@ -126,7 +128,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label class="font-weight-semibold text-dark">
                                     <i class="fas fa-calendar-times text-danger mr-1"></i>Tanggal Selesai 
@@ -145,18 +147,18 @@
                         </div>
                     </div>
 
-                    <hr class="my-4">
+                    <hr class="my-3 my-md-4">
 
                     {{-- Baris 4: Berlaku Untuk --}}
                     <div class="card card-secondary card-outline">
                         <div class="card-header bg-light">
-                            <h4 class="card-title mb-0">
+                            <h4 class="card-title mb-0 text-center text-md-left">
                                 <i class="fas fa-bullseye text-secondary mr-2"></i>Pengaturan Target Diskon
                             </h4>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-4 mb-3 mb-md-0">
                                     <div class="form-group">
                                         <label class="font-weight-semibold text-dark">Berlaku Untuk</label>
                                         <select id="berlaku_untuk" class="form-control border-0 shadow-sm" style="background-color: #f8f9fa;">
@@ -173,7 +175,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-4" id="kategori_field" style="display: none;">
+                                <div class="col-12 col-md-4 mb-3 mb-md-0" id="kategori_field" style="display: none;">
                                     <div class="form-group">
                                         <label class="font-weight-semibold text-dark">
                                             <i class="fas fa-tags text-info mr-1"></i>Pilih Kategori
@@ -187,7 +189,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-4" id="produk_field" style="display: none;">
+                                <div class="col-12 col-md-4" id="produk_field" style="display: none;">
                                     <div class="form-group">
                                         <label class="font-weight-semibold text-dark">
                                             <i class="fas fa-box text-orange mr-1"></i>Pilih Produk
@@ -207,14 +209,14 @@
 
                 {{-- Footer --}}
                 <div class="card-footer bg-light border-top">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <a href="{{ route('diskon.index') }}" class="btn btn-secondary">
+                    <div class="d-flex flex-column flex-md-row justify-content-between">
+                        <div class="mb-2 mb-md-0">
+                            <a href="{{ route('diskon.index') }}" class="btn btn-secondary btn-block btn-md-inline">
                                 <i class="fas fa-arrow-left mr-2"></i>Kembali
                             </a>
                         </div>
-                        <div class="col-md-6 text-right">
-                            <button type="submit" class="btn btn-success px-4">
+                        <div>
+                            <button type="submit" class="btn btn-success px-4 btn-block btn-md-inline">
                                 <i class="fas fa-save mr-2"></i>Simpan Diskon
                             </button>
                         </div>
@@ -263,6 +265,29 @@
         .btn:hover {
             transform: translateY(-1px);
             transition: all 0.3s ease;
+        }
+
+        /* Custom responsive classes */
+        @media (max-width: 767.98px) {
+            .btn-block {
+                display: block;
+                width: 100%;
+            }
+            
+            .card-body {
+                padding: 1rem !important;
+            }
+            
+            .form-control {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+
+        @media (min-width: 768px) {
+            .btn-md-inline {
+                display: inline-block;
+                width: auto;
+            }
         }
     </style>
 @endsection

@@ -23,7 +23,7 @@ class DashboardController extends Controller
             DB::raw('SUM(total) as jumlah_total'),
             DB::raw("DATE_FORMAT(tanggal, '%d/%m/%Y') tgl")
         )
-            ->where('status', '!=', 'batal') // Filter agar transaksi batal tidak dihitung
+            ->where('status', '!=', 'batal') // Filter transaksi batal tidak dihitung
             ->whereMonth('tanggal', date('m'))
             ->whereYear('tanggal', date('Y'))
             ->groupBy('tgl')

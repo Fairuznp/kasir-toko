@@ -9,9 +9,9 @@
     <form action="{{ route('diskon.update', $diskon) }}" method="POST" class="card card-orange card-outline">
         @csrf
         @method('PUT')
-        <div class="card-body">
+        <div class="card-body p-3 p-md-4">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6 mb-3 mb-md-0">
                     <div class="form-group">
                         <label>Kode Diskon</label>
                         <input type="text" name="kode_diskon" 
@@ -22,7 +22,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Jenis Diskon</label>
                         <select name="jenis_diskon" class="form-control @error('jenis_diskon') is-invalid @enderror">
@@ -37,7 +37,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6 mb-3 mb-md-0">
                     <div class="form-group">
                         <label>Jumlah Diskon</label>
                         <input type="number" name="jumlah_diskon" 
@@ -48,7 +48,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Minimal Pembelian</label>
                         <input type="number" name="minimal_pembelian" 
@@ -62,7 +62,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6 mb-3 mb-md-0">
                     <div class="form-group">
                         <label>Tanggal Mulai</label>
                         <input type="datetime-local" name="tanggal_mulai" 
@@ -73,7 +73,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Tanggal Selesai</label>
                         <input type="datetime-local" name="tanggal_selesai" 
@@ -87,7 +87,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4 mb-3 mb-md-0">
                     <div class="form-group">
                         <label>Status</label>
                         <select name="status" class="form-control">
@@ -96,7 +96,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4 mb-3 mb-md-0">
                     <div class="form-group">
                         <label>Berlaku Untuk</label>
                         <select id="berlaku_untuk" class="form-control">
@@ -106,7 +106,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4" id="kategori_field" style="{{ $diskon->kategori_id ? '' : 'display: none;' }}">
+                <div class="col-12 col-md-4" id="kategori_field" style="{{ $diskon->kategori_id ? '' : 'display: none;' }}">
                     <div class="form-group">
                         <label>Pilih Kategori</label>
                         <select name="kategori_id" class="form-control">
@@ -119,7 +119,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4" id="produk_field" style="{{ $diskon->produk_id ? '' : 'display: none;' }}">
+                <div class="col-12 col-md-4" id="produk_field" style="{{ $diskon->produk_id ? '' : 'display: none;' }}">
                     <div class="form-group">
                         <label>Pilih Produk</label>
                         <select name="produk_id" class="form-control">
@@ -136,10 +136,40 @@
         </div>
 
         <div class="card-footer">
-            <a href="{{ route('diskon.index') }}" class="btn btn-secondary">Kembali</a>
-            <button type="submit" class="btn btn-primary">Update</button>
+            <div class="d-flex flex-column flex-md-row justify-content-between">
+                <div class="mb-2 mb-md-0">
+                    <a href="{{ route('diskon.index') }}" class="btn btn-secondary btn-block btn-md-inline">Kembali</a>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary btn-block btn-md-inline">Update</button>
+                </div>
+            </div>
         </div>
     </form>
+
+    <style>
+        @media (max-width: 767.98px) {
+            .btn-block {
+                display: block;
+                width: 100%;
+            }
+            
+            .card-body {
+                padding: 1rem !important;
+            }
+            
+            .form-control {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+
+        @media (min-width: 768px) {
+            .btn-md-inline {
+                display: inline-block;
+                width: auto;
+            }
+        }
+    </style>
 @endsection
 
 @push('scripts')
