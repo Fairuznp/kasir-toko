@@ -3,9 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\ProfileService;
 
 class ProfileController extends Controller
 {
+    protected $profileService;
+
+    public function __construct(ProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     public function show(Request $request)
     {
         return view('user.profile', [
@@ -28,15 +36,8 @@ class ProfileController extends Controller
             'password_baru' => ['nullable', 'max:100', 'confirmed']
         ]);
 
-        if ($request->password_baru) {
-            $request->merge([
-                'password' => bcrypt($request->password_baru),
-            ]);
-            $request->user()->update($request->all());
-            return redirect()->route('profile.show')->with('update', 'success');
-        } else {
-            $request->user()->update($request->only('nama', 'username'));
-            return redirect()->route('profile.show')->with('update', 'success');
-        }
+        $this->profileService->updateProfile($request->user(), $request->all());
+
+        return redirect()->route('profile.show')->with('update', 'success');
     }
 }

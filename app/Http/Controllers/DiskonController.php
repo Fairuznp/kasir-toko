@@ -4,34 +4,29 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Diskon;
-use App\Models\Kategori;
-use App\Models\Produk;
-use Jackiedo\Cart\Facades\Cart;
+use App\Services\DiskonService;
 
 class DiskonController extends Controller
 {
+    protected $diskonService;
+
+    public function __construct(DiskonService $diskonService)
+    {
+        $this->diskonService = $diskonService;
+    }
+
     public function index(Request $request)
     {
-        $search = $request->search;
-
-        $diskons = Diskon::with(['kategori', 'produk'])
-            ->when($search, function ($q, $search) {
-                return $q->where('kode_diskon', 'like', "%{$search}%");
-            })
-            ->orderBy('id', 'desc')
-            ->paginate();
-
-        if ($search) $diskons->appends(['search' => $search]);
+        $diskons = $this->diskonService->getAllDiskon($request->search);
 
         return view('diskon.index', compact('diskons'));
     }
 
     public function create()
     {
-        $kategoris = Kategori::select('id', 'nama_kategori')->get();
-        $produks = Produk::select('id', 'nama_produk')->get();
+        $data = $this->diskonService->getDataForCreate();
 
-        return view('diskon.create', compact('kategoris', 'produks'));
+        return view('diskon.create', $data);
     }
 
     public function store(Request $request)
@@ -47,17 +42,17 @@ class DiskonController extends Controller
             'produk_id' => 'nullable|exists:produks,id',
         ]);
 
-        Diskon::create($request->all());
+        $this->diskonService->createDiskon($request->all());
 
         return redirect()->route('diskon.index')->with('store', 'success');
     }
 
     public function edit(Diskon $diskon)
     {
-        $kategoris = Kategori::select('id', 'nama_kategori')->get();
-        $produks = Produk::select('id', 'nama_produk')->get();
+        $data = $this->diskonService->getDataForCreate();
+        $data['diskon'] = $diskon;
 
-        return view('diskon.edit', compact('diskon', 'kategoris', 'produks'));
+        return view('diskon.edit', $data);
     }
 
     public function update(Request $request, Diskon $diskon)
@@ -74,14 +69,15 @@ class DiskonController extends Controller
             'produk_id' => 'nullable|exists:produks,id',
         ]);
 
-        $diskon->update($request->all());
+        $this->diskonService->updateDiskon($diskon, $request->all());
 
         return redirect()->route('diskon.index')->with('update', 'success');
     }
 
     public function destroy(Diskon $diskon)
     {
-        $diskon->delete();
+        $this->diskonService->deleteDiskon($diskon);
+
         return back()->with('destroy', 'success');
     }
 
@@ -91,35 +87,22 @@ class DiskonController extends Controller
             'kode_diskon' => 'required|exists:diskons,kode_diskon'
         ]);
 
-        $cart = Cart::name($request->user()->id);
-        $cartDetails = $cart->getDetails();
-        $subtotal = $cartDetails->get('subtotal');
-        $items = $cartDetails->get('items');
+        try {
+            $result = $this->diskonService->terapkanDiskon(
+                $request->kode_diskon,
+                $request->user()->id
+            );
 
-        $diskon = Diskon::where('kode_diskon', $request->kode_diskon)->first();
-
-        $validation = $diskon->isValid($subtotal, $items);
-
-        if (!$validation['valid']) {
-            return response()->json(['success' => false, 'message' => $validation['message']], 400);
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'nilai_diskon' => $result['nilai_diskon']
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
         }
-
-        $nilaiDiskon = $diskon->hitungNilaiDiskon($subtotal, $items);
-
-        // Simpan diskon ke cart extra info
-        $extraInfo = $cart->getExtraInfo();
-        $extraInfo['diskon'] = [
-            'id' => $diskon->id,
-            'kode_diskon' => $diskon->kode_diskon,
-            'nilai_diskon' => $nilaiDiskon
-        ];
-
-        $cart->setExtraInfo($extraInfo);
-
-        return response()->json([
-            'success' => true,
-            'message' => $validation['message'],
-            'nilai_diskon' => $nilaiDiskon
-        ]);
     }
 }

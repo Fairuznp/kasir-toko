@@ -3,21 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
+use App\Services\KategoriService;
 use Illuminate\Http\Request;
 
 class KategoriController extends Controller
 {
+    protected $kategoriService;
+
+    public function __construct(KategoriService $kategoriService)
+    {
+        $this->kategoriService = $kategoriService;
+    }
+
     public function index(Request $request)
     {
-        $search = $request->search;
-
-        $kategoris = Kategori::orderBy('id')
-            ->when($search, function ($q, $search) {
-                return $q->where('nama_kategori', 'like', "%{$search}%");
-            })
-            ->paginate();
-
-        if ($search) $kategoris->appends(['search' => $search]);
+        $kategoris = $this->kategoriService->getAllKategori($request->search);
 
         return view('kategori.index', [
             'kategoris' => $kategoris
@@ -35,7 +35,7 @@ class KategoriController extends Controller
             'nama_kategori' => ['required', 'max:100'],
         ]);
 
-        Kategori::create($request->all());
+        $this->kategoriService->createKategori($request->all());
 
         return redirect()->route('kategori.index')->with('store', 'success');
     }
@@ -51,20 +51,21 @@ class KategoriController extends Controller
             'kategori' => $kategori
         ]);
     }
+
     public function update(Request $request, Kategori $kategori)
     {
         $request->validate([
             'nama_kategori' => ['required', 'max:100'],
         ]);
 
-        $kategori->update($request->all());
+        $this->kategoriService->updateKategori($kategori, $request->all());
 
         return redirect()->route('kategori.index')->with('update', 'success');
     }
 
     public function destroy(Kategori $kategori)
     {
-        $kategori->delete();
+        $this->kategoriService->deleteKategori($kategori);
 
         return back()->with('destroy', 'success');
     }

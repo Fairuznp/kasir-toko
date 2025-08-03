@@ -61,8 +61,11 @@ class Diskon extends Model
         if ($this->kategori_id || $this->produk_id) {
             $validItems = false;
 
-            foreach ($items as $item) {
-                $produk = Produk::find($item->id);
+            // PERBAIKAN: Handle baik array maupun objek Collection
+            $itemsArray = $this->convertItemsToArray($items);
+
+            foreach ($itemsArray as $item) {
+                $produk = Produk::find($item['id']);
                 if (!$produk) continue;
 
                 // Jika diskon untuk kategori tertentu
@@ -86,15 +89,19 @@ class Diskon extends Model
 
         return ['valid' => true, 'message' => 'Diskon berhasil diterapkan'];
     }
+
     public function hitungNilaiDiskon($subtotal, $items = [])
     {
         $subtotalDiskon = 0;
 
+        // PERBAIKAN: Convert items ke format yang konsisten
+        $itemsArray = $this->convertItemsToArray($items);
+
         // Hitung subtotal hanya dari produk yang cocok
         if ($this->kategori_id || $this->produk_id) {
-            foreach ($items as $item) {
+            foreach ($itemsArray as $item) {
                 // Ambil produk dari database
-                $produk = \App\Models\Produk::find($item->id);
+                $produk = Produk::find($item['id']);
                 if (!$produk) continue;
 
                 // Cek kecocokan kategori atau produk
@@ -102,7 +109,9 @@ class Diskon extends Model
                 $produkMatch = $this->produk_id && $produk->id == $this->produk_id;
 
                 if ($kategoriMatch || $produkMatch) {
-                    $subtotalDiskon += $item->price * $item->quantity;
+                    // Gunakan subtotal item jika ada, jika tidak hitung manual
+                    $itemSubtotal = $item['subtotal'] ?? ($item['price'] * $item['quantity']);
+                    $subtotalDiskon += $itemSubtotal;
                 }
             }
         } else {
@@ -112,10 +121,95 @@ class Diskon extends Model
 
         // Hitung diskon berdasarkan subtotalDiskon
         if ($this->jenis_diskon === 'persen') {
-            return round(($subtotalDiskon * $this->jumlah_diskon) / 100);
+            $nilaiDiskon = ($subtotalDiskon * $this->jumlah_diskon) / 100;
+            // Batasi diskon maksimal tidak boleh lebih dari subtotal yang berlaku
+            return min(round($nilaiDiskon), $subtotalDiskon);
         }
 
-        // Nominal: pastikan tidak lebih besar dari subtotal
+        // Nominal: pastikan tidak lebih besar dari subtotal yang berlaku
         return min($this->jumlah_diskon, $subtotalDiskon);
+    }
+
+    /**
+     * Method untuk mendapatkan subtotal yang memenuhi syarat diskon
+     */
+    public function getEligibleSubtotal($items = [])
+    {
+        $itemsArray = $this->convertItemsToArray($items);
+
+        if (!$this->kategori_id && !$this->produk_id) {
+            // Diskon berlaku untuk semua produk
+            $total = 0;
+            foreach ($itemsArray as $item) {
+                $total += $item['subtotal'] ?? ($item['price'] * $item['quantity']);
+            }
+            return $total;
+        }
+
+        $eligibleSubtotal = 0;
+        foreach ($itemsArray as $item) {
+            $produk = Produk::find($item['id']);
+            if (!$produk) continue;
+
+            $kategoriMatch = $this->kategori_id && $produk->kategori_id == $this->kategori_id;
+            $produkMatch = $this->produk_id && $produk->id == $this->produk_id;
+
+            if ($kategoriMatch || $produkMatch) {
+                $eligibleSubtotal += $item['subtotal'] ?? ($item['price'] * $item['quantity']);
+            }
+        }
+
+        return $eligibleSubtotal;
+    }
+
+    /**
+     * PERBAIKAN: Method untuk convert items ke format array yang konsisten
+     * Menangani berbagai format input: objek, collection, atau array
+     */
+    private function convertItemsToArray($items)
+    {
+        if (empty($items)) {
+            return [];
+        }
+
+        $result = [];
+
+        // Jika items adalah Collection Laravel atau objek yang bisa di-loop
+        if (is_object($items) && method_exists($items, 'toArray')) {
+            $items = $items->toArray();
+        }
+
+        // Jika items adalah objek dengan properti yang bisa diakses
+        if (is_object($items) && !is_array($items)) {
+            // Coba convert ke array jika memungkinkan
+            if (method_exists($items, 'all')) {
+                $items = $items->all();
+            } else {
+                // Jika objek tunggal, wrap dalam array
+                $items = [$items];
+            }
+        }
+
+        foreach ($items as $item) {
+            if (is_object($item)) {
+                // Convert objek ke array
+                $result[] = [
+                    'id' => $item->id ?? null,
+                    'quantity' => $item->quantity ?? 0,
+                    'price' => $item->price ?? 0,
+                    'subtotal' => $item->subtotal ?? ($item->price * $item->quantity),
+                ];
+            } elseif (is_array($item)) {
+                // Jika sudah array, pastikan key yang dibutuhkan ada
+                $result[] = [
+                    'id' => $item['id'] ?? null,
+                    'quantity' => $item['quantity'] ?? 0,
+                    'price' => $item['price'] ?? 0,
+                    'subtotal' => $item['subtotal'] ?? ($item['price'] * $item['quantity']),
+                ];
+            }
+        }
+
+        return $result;
     }
 }

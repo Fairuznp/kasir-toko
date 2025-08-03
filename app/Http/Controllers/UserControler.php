@@ -3,25 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 
 class UserControler extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    protected $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function index(Request $request)
     {
-        $search = $request->search;
-
-        $users = User::orderBy('id')
-            ->when($search, function ($q, $search) {
-                return $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%");
-            })
-            ->paginate();
-
-        if ($search) $users->appends(['search' => $search]);
+        $users = $this->userService->getAllUsers($request->search);
 
         return view('user.index', [
             'users' => $users
@@ -32,6 +28,7 @@ class UserControler extends Controller
     {
         return view('user.create');
     }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -41,11 +38,7 @@ class UserControler extends Controller
             'password' => ['required', 'max:100', 'confirmed']
         ]);
 
-        $request->merge([
-            'password' => bcrypt($request->password)
-        ]);
-
-        User::create($request->all());
+        $this->userService->createUser($request->all());
 
         return redirect()->route('user.index')->with('store', 'success');
     }
@@ -62,7 +55,6 @@ class UserControler extends Controller
         ]);
     }
 
-
     public function update(Request $request, User $user)
     {
         $request->validate([
@@ -72,21 +64,14 @@ class UserControler extends Controller
             'password_baru' => ['nullable', 'max:100', 'confirmed']
         ]);
 
-        if ($request->password_baru) {
-            $request->merge([
-                'password' => bcrypt($request->password_baru)
-            ]);
-            $user->update($request->all());
-        } else {
-            $user->update($request->only('nama', 'username', 'role'));
-        }
+        $this->userService->updateUser($user, $request->all());
 
         return redirect()->route('user.index')->with('update', 'success');
     }
 
     public function destroy(User $user)
     {
-        $user->delete();
+        $this->userService->deleteUser($user);
 
         return back()->with('destroy', 'success');
     }

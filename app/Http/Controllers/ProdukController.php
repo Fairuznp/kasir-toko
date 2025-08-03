@@ -3,29 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
+use App\Services\ProdukService;
 use Illuminate\Http\Request;
-use App\Models\Kategori;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Support\Facades\Response;
 
 class ProdukController extends Controller
 {
+    protected $produkService;
+
+    public function __construct(ProdukService $produkService)
+    {
+        $this->produkService = $produkService;
+    }
+
     public function index(Request $request)
     {
-        $search = $request->search;
-
-        $produks = Produk::join('kategoris', 'kategoris.id', 'produks.kategori_id')
-            ->orderBy('produks.id')
-            ->select('produks.*', 'nama_kategori')
-            ->when($search, function ($q, $search) {
-                return $q->where('kode_produk', 'like', "%{$search}%")
-                    ->orWhere('nama_produk', 'like', "%{$search}%");
-            })
-            ->paginate();
-
-        if ($search) {
-            $produks->appends(['search' => $search]);
-        }
+        $produks = $this->produkService->getAllProduk($request->search);
 
         return view('produk.index', [
             'produks' => $produks
@@ -34,15 +27,7 @@ class ProdukController extends Controller
 
     public function create()
     {
-        $dataKategori = Kategori::orderBy('nama_kategori')->get();
-
-        $kategoris = [
-            '' => 'Pilih Kategori:'
-        ];
-
-        foreach ($dataKategori as $kategori) {
-            $kategoris[] = [$kategori->id, $kategori->nama_kategori];
-        }
+        $kategoris = $this->produkService->getKategoriForCreate();
 
         return view('produk.create', [
             'kategoris' => $kategoris
@@ -58,7 +43,7 @@ class ProdukController extends Controller
             'kategori_id' => ['required', 'exists:kategoris,id'],
         ]);
 
-        Produk::create($request->all());
+        $this->produkService->createProduk($request->all());
 
         return redirect()->route('produk.index')->with('store', 'success');
     }
@@ -70,15 +55,7 @@ class ProdukController extends Controller
 
     public function edit(Produk $produk)
     {
-        $dataKategori = Kategori::orderBy('nama_kategori')->get();
-
-        $kategoris = [
-            '' => 'Pilih Kategori:'
-        ];
-
-        foreach ($dataKategori as $kategori) {
-            $kategoris[] = [$kategori->id, $kategori->nama_kategori];
-        }
+        $kategoris = $this->produkService->getKategoriForCreate();
 
         return view('produk.edit', [
             'produk' => $produk,
@@ -95,14 +72,14 @@ class ProdukController extends Controller
             'kategori_id' => ['required', 'exists:kategoris,id'],
         ]);
 
-        $produk->update($request->all());
+        $this->produkService->updateProduk($produk, $request->all());
 
         return redirect()->route('produk.index')->with('update', 'success');
     }
 
     public function destroy(Produk $produk)
     {
-        $produk->delete();
+        $this->produkService->deleteProduk($produk);
 
         return back()->with('destroy', 'success');
     }

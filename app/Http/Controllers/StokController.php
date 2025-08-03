@@ -3,26 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Stok;
+use App\Services\StokService;
 use Illuminate\Http\Request;
-use App\Models\Produk;
 
 class StokController extends Controller
 {
-    // Controller StokController.php
+    protected $stokService;
+
+    public function __construct(StokService $stokService)
+    {
+        $this->stokService = $stokService;
+    }
 
     public function index(Request $request)
     {
-        $search = $request->search;
-
-        $stoks = Stok::join('produks', 'produks.id', 'stoks.produk_id')
-            ->select('stoks.*', 'nama_produk')
-            ->orderBy('stoks.id', 'desc')
-            ->when($search, function ($q, $search) {
-                return $q->where('tanggal', 'like', "%{$search}%");
-            })
-            ->paginate();
-
-        if ($search) $stoks->appends(['search' => $search]);
+        $stoks = $this->stokService->getAllStok($request->search);
 
         return view('stok.index', [
             'stoks' => $stoks
@@ -36,11 +31,7 @@ class StokController extends Controller
 
     public function produk(Request $request)
     {
-        $produks = Produk::select('id', 'nama_produk')
-            ->where('nama_produk', 'like', "%{$request->search}%")
-            ->take(15)
-            ->orderBy('nama_produk')
-            ->get();
+        $produks = $this->stokService->searchProduk($request->search);
 
         return response()->json($produks);
     }
@@ -55,28 +46,14 @@ class StokController extends Controller
             'produk_id' => 'Nama produk'
         ]);
 
-        $request->merge([
-            'tanggal' => date('Y-m-d')
-        ]);
-
-        Stok::create($request->all());
-
-        $produk = Produk::find($request->produk_id);
-        $produk->update([
-            'stok' => $produk->stok + $request->jumlah
-        ]);
+        $this->stokService->createStok($request->all());
 
         return redirect()->route('stok.index')->with('store', 'success');
     }
 
     public function destroy(Stok $stok)
     {
-        $produk = Produk::find($stok->produk_id);
-        $produk->update([
-            'stok' => $produk->stok - $stok->jumlah
-        ]);
-
-        $stok->delete();
+        $this->stokService->deleteStok($stok);
 
         return back()->with('destroy', 'success');
     }
