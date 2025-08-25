@@ -53,10 +53,9 @@ class TransaksiController extends Controller
         $totalFinal = $total - $discount['nilai_diskon'];
 
         $request->validate([
-            'pelanggan_id' => ['required', 'exists:pelanggans,id'],
+            'pelanggan_id' => ['nullable', 'exists:pelanggans,id'],
             'cash' => ['required', 'numeric', 'gte:' . $totalFinal]
         ], [
-            'pelanggan_id' => 'pelanggan',
             'cash.gte' => 'Cash harus minimal Rp ' . number_format($totalFinal)
         ]);
 

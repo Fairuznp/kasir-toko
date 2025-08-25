@@ -13,7 +13,7 @@ class TransaksiRepository
     public function getAllPenjualan($search = null)
     {
         return Penjualan::join('users', 'users.id', 'penjualans.user_id')
-            ->join('pelanggans', 'pelanggans.id', 'penjualans.pelanggan_id')
+            ->leftJoin('pelanggans', 'pelanggans.id', 'penjualans.pelanggan_id')
             ->select('penjualans.*', 'users.nama as nama_kasir', 'pelanggans.nama as nama_pelanggan')
             ->orderBy('id', 'desc')
             ->when($search, function ($q, $search) {

@@ -4,8 +4,49 @@
     </div>
 </div>
 
-<form action="{{ route('transaksi.store') }}" method="POST" class="card card-orange card-outline">
+<form action="{{ route('transaksi.store') }}" method="POST" class="card card-orange card-outline" id="formTransaksi">
     @csrf
+    <div id="form-submit-overlay" style="display:none"></div>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        let isSubmitting = false;
+        
+        document.getElementById('formTransaksi').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) return;
+            
+            const pelangganId = document.getElementById('pelangganId').value;
+            
+            if (!pelangganId) {
+                try {
+                    const result = await Swal.fire({
+                        title: 'Konfirmasi',
+                        text: 'Apakah anda ingin melanjutkan transaksi tanpa nama pelanggan?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Lanjutkan',
+                        cancelButtonText: 'Tidak',
+                        allowOutsideClick: false
+                    });
+                    
+                    if (result.isConfirmed) {
+                        isSubmitting = true;
+                        this.removeEventListener('submit', arguments.callee);
+                        this.submit();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            } else {
+                isSubmitting = true;
+                this.removeEventListener('submit', arguments.callee);
+                this.submit();
+            }
+        });
+    </script>
     <div class="card-body">
         <p class="text-right small text-muted">Tanggal : {{ $tanggal }}</p>
 

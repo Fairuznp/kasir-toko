@@ -60,12 +60,12 @@
                                         {{ date('d/m/Y H:i', strtotime($penjualan->tanggal)) }}
                                     </small>
                                 </td>
-                                <td class="d-none d-lg-table-cell">{{ $penjualan->nama_pelanggan }}</td>
+                                <td class="d-none d-lg-table-cell">{{ $penjualan->nama_pelanggan ?: 'Anynomous' }}</td>
                                 <td class="d-none d-lg-table-cell">{{ $penjualan->nama_kasir }}</td>
                                 <td>
-                                    <div>{{ $penjualan->total }}</div>
+                                    <div>{{ number_format($penjualan->total, 0, ',', '.') }}</div>
                                     <small class="text-muted d-lg-none">
-                                        {{ $penjualan->nama_pelanggan }}
+                                        {{ $penjualan->nama_pelanggan ?: '-' }}
                                     </small>
                                 </td>
                                 <td class="d-none d-sm-table-cell">

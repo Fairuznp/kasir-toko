@@ -242,14 +242,4 @@ class Diskon extends Model
 
         return $result;
     }
-
-    public function updateStatus()
-    {
-        $now = now();
-
-        if ($now > $this->tanggal_selesai) {
-            $this->status = false;
-            $this->save();
-        }
-    }
 }

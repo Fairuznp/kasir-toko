@@ -1,5 +1,10 @@
 @extends('layouts.main', ['title' => 'Transaksi'])
 
+@push('css')
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endpush
+
 @section('title-content')
     <i class="fas fa-cash-register mr-2"></i>
     Transaksi

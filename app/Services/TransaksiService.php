@@ -99,10 +99,6 @@ class TransaksiService
             $pelangganId = $cart->getExtraInfo('pelanggan')['id'] ?? null;
         }
 
-        if (!$pelangganId) {
-            throw new \Exception('Pelanggan belum dipilih');
-        }
-
         $penjualan = $this->transaksiRepository->createPenjualan([
             'user_id' => $user->id,
             'pelanggan_id' => $pelangganId,
@@ -149,7 +145,7 @@ class TransaksiService
     {
         return [
             'penjualan' => $transaksi,
-            'pelanggan' => $this->transaksiRepository->getPelangganById($transaksi->pelanggan_id),
+            'pelanggan' => $transaksi->pelanggan_id ? $this->transaksiRepository->getPelangganById($transaksi->pelanggan_id) : null,
             'user' => $this->transaksiRepository->getUserById($transaksi->user_id),
             'detilPenjualan' => $this->transaksiRepository->getDetilPenjualanByPenjualanId($transaksi->id)
         ];

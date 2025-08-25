@@ -17,9 +17,11 @@
             <div class="row">
                 <div class="col-12 col-lg-6 mb-3 mb-lg-0">
                     <p class="mb-1"><strong>No. Transaksi:</strong> {{ $penjualan->nomor_transaksi }}</p>
-                    <p class="mb-1"><strong>Nama Pelanggan:</strong> {{ $pelanggan->nama }}</p>
-                    <p class="mb-1 d-none d-sm-block"><strong>No. Telepon:</strong> {{ $pelanggan->nomor_tlp }}</p>
-                    <p class="mb-0 d-none d-md-block"><strong>Alamat:</strong> {{ $pelanggan->alamat }}</p>
+                    <p class="mb-1"><strong>Nama Pelanggan:</strong> {{ $pelanggan ? $pelanggan->nama : '-' }}</p>
+                    @if($pelanggan)
+                        <p class="mb-1 d-none d-sm-block"><strong>No. Telepon:</strong> {{ $pelanggan->nomor_tlp ?: '-' }}</p>
+                        <p class="mb-0 d-none d-md-block"><strong>Alamat:</strong> {{ $pelanggan->alamat ?: '-' }}</p>
+                    @endif
                 </div>
                 <div class="col-12 col-lg-6">
                     <p class="mb-1"><strong>Tgl. Transaksi:</strong> {{ date('d/m/Y H:i:s', strtotime($penjualan->tanggal)) }}</p>
