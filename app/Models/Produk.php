@@ -15,7 +15,13 @@ class Produk extends Model
         'kategori_id',
         'kode_produk',
         'nama_produk',
-        'harga',
+        'harga_modal',
+        'harga_jual',
         'stok',
     ];
+
+    public function expired_products()
+    {
+        return $this->hasMany(ProdukExpired::class);
+    }
 }

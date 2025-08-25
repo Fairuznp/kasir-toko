@@ -52,12 +52,14 @@ class Diskon extends Model
             return ['valid' => false, 'message' => 'Kode diskon sudah tidak berlaku'];
         }
 
-        // Cek minimal pembelian (gunakan subtotal sebelum pajak)
-        if ($subtotal < $this->minimal_pembelian) {
+        // Cek minimal pembelian berdasarkan produk/kategori jika ada
+        $eligibleSubtotal = $this->getEligibleSubtotal($items);
+
+        if ($eligibleSubtotal < $this->minimal_pembelian) {
             return ['valid' => false, 'message' => 'Minimal pembelian Rp ' . number_format($this->minimal_pembelian)];
         }
 
-        // Cek kategori/produk jika ada
+        // Cek kategori/produk jika ada 
         if ($this->kategori_id || $this->produk_id) {
             $validItems = false;
 
@@ -92,10 +94,38 @@ class Diskon extends Model
 
     public function hitungNilaiDiskon($subtotal, $items = [])
     {
-        $subtotalDiskon = 0;
-
         // PERBAIKAN: Convert items ke format yang konsisten
         $itemsArray = $this->convertItemsToArray($items);
+
+        // Jika diskon untuk produk atau kategori tertentu
+        if ($this->produk_id || $this->kategori_id) {
+            $subtotalDiskon = 0;
+
+            foreach ($itemsArray as $item) {
+                $produk = Produk::find($item['id']);
+                if (!$produk) continue;
+
+                $isEligible = false;
+
+                // Cek apakah item memenuhi syarat diskon
+                if ($this->produk_id && $produk->id == $this->produk_id) {
+                    $isEligible = true;
+                } elseif ($this->kategori_id && $produk->kategori_id == $this->kategori_id) {
+                    $isEligible = true;
+                }
+
+                // Hitung diskon hanya untuk item yang memenuhi syarat
+                if ($isEligible) {
+                    $itemSubtotal = $item['quantity'] * $item['price'];
+                    $subtotalDiskon += ($itemSubtotal * $this->jumlah_diskon / 100);
+                }
+            }
+
+            return $subtotalDiskon;
+        }
+
+        // Jika diskon untuk semua produk
+        return ($subtotal * $this->jumlah_diskon / 100);
 
         // Hitung subtotal hanya dari produk yang cocok
         if ($this->kategori_id || $this->produk_id) {
@@ -211,5 +241,15 @@ class Diskon extends Model
         }
 
         return $result;
+    }
+
+    public function updateStatus()
+    {
+        $now = now();
+
+        if ($now > $this->tanggal_selesai) {
+            $this->status = false;
+            $this->save();
+        }
     }
 }

@@ -31,6 +31,13 @@
         hr {
             border-top: 1px solid #8c8b8b;
         }
+        
+        th {
+            text-align: left;
+            border-bottom: 1px solid #8c8b8b;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 
@@ -54,7 +61,12 @@
         <table>
             @foreach ($detilPenjualan as $row)
             <tr>
-                <td>{{ $row->jumlah }} {{ $row->nama_produk }} x {{ $row->harga_produk }}</td>
+                <td colspan="2">
+                    {{ $row->jumlah }} {{ $row->nama_produk }} x {{ number_format($row->harga_jual, 0, ',', '.') }}
+                    @if($row->diskon_id && !empty($row->nama_diskon))
+                        ({{ $row->nilai_diskon }}% Off: -{{ number_format(($row->harga_jual * $row->jumlah * $row->nilai_diskon / 100), 0, ',', '.') }})
+                    @endif
+                </td>
                 <td class="right">{{ number_format($row->subtotal, 0, ',', '.') }}</td>
             </tr>
             @endforeach
@@ -65,7 +77,18 @@
         <p class="right">
             Sub Total : {{ number_format($penjualan->subtotal, 0, ',', '.') }} <br>
             Pajak PPN(10%) : {{ number_format($penjualan->pajak, 0, ',', '.') }} <br>
+            @php
+                $hasItemDiscount = false;
+                foreach ($detilPenjualan as $detail) {
+                    if ($detail->nilai_diskon > 0) {
+                        $hasItemDiscount = true;
+                        break;
+                    }
+                }
+            @endphp
+            @if($penjualan->diskon_id && !$hasItemDiscount)
             Diskon : - {{ number_format($penjualan->nilai_diskon, 0, ',', '.') }} <br>
+            @endif
             Total : {{ number_format($penjualan->total, 0, ',', '.') }} <br>
             Tunai : {{ number_format($penjualan->tunai, 0, ',', '.') }} <br>
             Kembalian : {{ number_format($penjualan->kembalian, 0, ',', '.') }} <br>

@@ -46,6 +46,7 @@
                             <th>Nama Produk</th>
                             <th>Qty</th>
                             <th class="d-none d-sm-table-cell">Harga</th>
+                            <th>Diskon</th>
                             <th>Sub Total</th>
                         </tr>
                     </thead>
@@ -56,11 +57,25 @@
                                 <td>
                                     <div>{{ $item->nama_produk }}</div>
                                     <small class="text-muted d-sm-none">
-                                        {{ number_format($item->harga_produk, 0, ',', '.') }} x {{ $item->jumlah }}
+                                        {{ number_format($item->harga_jual, 0, ',', '.') }} x {{ $item->jumlah }}
+                                        @if($item->nilai_diskon > 0)
+                                            ({{ $item->nilai_diskon }}% Off)
+                                        @endif
                                     </small>
                                 </td>
                                 <td>{{ $item->jumlah }}</td>
-                                <td class="d-none d-sm-table-cell">{{ number_format($item->harga_produk, 0, ',', '.') }}</td>
+                                <td class="d-none d-sm-table-cell">{{ number_format($item->harga_jual, 0, ',', '.') }}</td>
+                                <td>
+                                    @if($item->nilai_diskon > 0)
+                                        {{ $item->nilai_diskon }}%
+                                        <br>
+                                        <small class="text-danger">
+                                            -{{ number_format(($item->harga_jual * $item->jumlah * $item->nilai_diskon / 100), 0, ',', '.') }}
+                                        </small>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
@@ -82,10 +97,21 @@
                                 <td>Pajak 10%:</td>
                                 <td class="text-right">{{ number_format($penjualan->pajak, 0, ',', '.') }}</td>
                             </tr>
+                            @php
+                                $hasItemDiscount = false;
+                                foreach ($detilPenjualan as $detail) {
+                                    if ($detail->nilai_diskon > 0) {
+                                        $hasItemDiscount = true;
+                                        break;
+                                    }
+                                }
+                            @endphp
+                            @if($penjualan->diskon_id && !$hasItemDiscount)
                             <tr>
                                 <td>Diskon:</td>
                                 <td class="text-right">- {{ number_format($penjualan->nilai_diskon, 0, ',', '.') }}</td>
                             </tr>
+                            @endif
                             <tr class="font-weight-bold">
                                 <td>Total:</td>
                                 <td class="text-right">{{ number_format($penjualan->total, 0, ',', '.') }}</td>

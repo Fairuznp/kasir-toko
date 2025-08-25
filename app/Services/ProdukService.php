@@ -46,11 +46,19 @@ class ProdukService
 
     public function createProduk(array $data)
     {
+        // Ensure harga_modal and harga_jual are set
+        $data['harga_modal'] = $data['harga_modal'] ?? 0;
+        $data['harga_jual'] = $data['harga_jual'] ?? 0;
+
         return $this->produkRepository->createProduk($data);
     }
 
     public function updateProduk($produk, array $data)
     {
+        // Ensure harga_modal and harga_jual are set
+        $data['harga_modal'] = $data['harga_modal'] ?? $produk->harga_modal;
+        $data['harga_jual'] = $data['harga_jual'] ?? $produk->harga_jual;
+
         return $this->produkRepository->updateProduk($produk, $data);
     }
 

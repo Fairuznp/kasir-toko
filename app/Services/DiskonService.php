@@ -18,6 +18,10 @@ class DiskonService
     {
         $diskons = $this->diskonRepository->getAllDiskon($search);
 
+        foreach ($diskons as $diskon) {
+            $diskon->updateStatus();
+        }
+
         if ($search) {
             $diskons->appends(['search' => $search]);
         }
@@ -60,6 +64,9 @@ class DiskonService
         if (!$diskon) {
             throw new \Exception('Kode diskon tidak ditemukan');
         }
+
+        // Perbarui status diskon sebelum validasi
+        $diskon->updateStatus();
 
         $validation = $diskon->isValid($subtotal, $items);
 

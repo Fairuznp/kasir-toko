@@ -9,6 +9,7 @@
             <x-nav-item title="Home" icon="fas fa-home" :routes="['home']" />
             <x-nav-item title="Pelanggan" icon="fas fa-users" :routes="['pelanggan.index', 'pelanggan.create', 'pelanggan.edit']"/>
             <x-nav-item title="Produk" icon="fas fa-box-open" :routes="['produk.index', 'produk.create', 'produk.edit']"/>
+            <x-nav-item title="Produk Expired" icon="fas fa-calendar-times" :routes="['produk-expired.index', 'produk-expired.create']"/>
             <x-nav-item title="Stok" icon="fas fa-pallet" :routes="['stok.index', 'stok.create', 'stok.edit']"/>
             <x-nav-item title="Transaksi" icon="fas fa-cash-register" :routes="['transaksi.index', 'transaksi.create', 'transaksi.show']"/>
             <x-nav-item title="Laporan" icon="fas fa-print" :routes="['laporan.index']"/>

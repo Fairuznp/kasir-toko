@@ -78,14 +78,14 @@ class CartService
             'id' => $produk->id,
             'title' => $produk->nama_produk,
             'quantity' => $qty,
-            'price' => $produk->harga
+            'price' => $produk->harga_jual
         ]);
 
         return [
             'kode_produk' => $kodeProduk,
             'nama_produk' => $produk->nama_produk,
             'quantity' => $qty,
-            'harga' => $produk->harga
+            'harga' => $produk->harga_jual
         ];
     }
 

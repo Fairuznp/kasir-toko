@@ -58,6 +58,7 @@
               <th width="10%">#</th>
               <th width="35%">Nama</th>
               <th width="35%">Username</th>
+              <th width="35%">Role</th>
               <th width="20%" class="text-center">Aksi</th>
             </tr>
           </thead>
@@ -75,6 +76,12 @@
                   <div class="d-flex align-items-center">
                     <i class="fas fa-at text-success mr-2"></i>
                     {{ $user->username }}
+                  </div>
+                </td>
+                 <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-at text-success mr-2"></i>
+                    {{ $user->role }}
                   </div>
                 </td>
                 <td class="text-center">

@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiskonController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\ProdukExpiredController;
 use App\Models\Kategori;
 use App\Models\Pelanggan;
 
@@ -32,6 +33,11 @@ Route::view('login', 'auth.login')->name('login')->middleware('guest');
 Route::post('login', [AuthController::class, 'login'])->middleware('guest');
 Route::post('logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 Route::middleware('auth')->group(function () {
+    // Produk Expired Routes
+    Route::get('produk-expired', [ProdukExpiredController::class, 'index'])->name('produk-expired.index');
+    Route::get('produk-expired/create', [ProdukExpiredController::class, 'create'])->name('produk-expired.create');
+    Route::post('produk-expired', [ProdukExpiredController::class, 'store'])->name('produk-expired.store');
+    Route::delete('produk-expired/{id}', [ProdukExpiredController::class, 'destroy'])->name('produk-expired.destroy');
     Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('laporan/harian', [LaporanController::class, 'harian'])->name('laporan.harian');
     Route::get('laporan/bulanan', [LaporanController::class, 'bulanan'])->name('laporan.bulanan');

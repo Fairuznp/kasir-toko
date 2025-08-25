@@ -117,13 +117,24 @@ class TransaksiService
             'nilai_diskon' => (int) $discount['nilai_diskon'],
         ]);
 
+        // Get the active discount if any
+        $diskon = null;
+        if (isset($extraInfo['diskon'])) {
+            $diskon = Diskon::find($extraInfo['diskon']['id']);
+        }
+
         foreach ($allItems as $item) {
+            $itemDiskonData = $this->calculateItemDiscount($item, $diskon);
+
             $this->transaksiRepository->createDetilPenjualan([
                 'penjualan_id' => $penjualan->id,
                 'produk_id' => $item->id,
+                'diskon_id' => $itemDiskonData['diskon_id'],
+                'nama_diskon' => $itemDiskonData['nama_diskon'],
+                'nilai_diskon' => $itemDiskonData['nilai_diskon'],
                 'jumlah' => $item->quantity,
-                'harga_produk' => $item->price,
-                'subtotal' => $item->subtotal,
+                'harga_jual' => $item->price,
+                'subtotal' => $item->subtotal - $itemDiskonData['nilai_diskon_rupiah'],
             ]);
 
             $this->produkRepository->updateStock($item->id, -$item->quantity);
@@ -142,6 +153,50 @@ class TransaksiService
             'user' => $this->transaksiRepository->getUserById($transaksi->user_id),
             'detilPenjualan' => $this->transaksiRepository->getDetilPenjualanByPenjualanId($transaksi->id)
         ];
+    }
+
+    protected function calculateItemDiscount($item, $diskon)
+    {
+        $result = [
+            'diskon_id' => null,
+            'nama_diskon' => null,
+            'nilai_diskon' => 0,
+            'nilai_diskon_rupiah' => 0
+        ];
+
+        if (!$diskon) {
+            return $result;
+        }
+
+        $produk = Produk::find($item->id);
+        if (!$produk) {
+            return $result;
+        }
+
+        $isEligible = false;
+
+        // Check if item is eligible for discount
+        if ($diskon->produk_id && $produk->id == $diskon->produk_id) {
+            $isEligible = true;
+        } elseif ($diskon->kategori_id && $produk->kategori_id == $diskon->kategori_id) {
+            $isEligible = true;
+        } elseif (!$diskon->produk_id && !$diskon->kategori_id) {
+            $isEligible = true;
+        }
+
+        if ($isEligible) {
+            $itemSubtotal = $item->quantity * $item->price;
+            $discountAmount = $itemSubtotal * $diskon->jumlah_diskon / 100;
+
+            return [
+                'diskon_id' => $diskon->id,
+                'nama_diskon' => $diskon->kode_diskon,
+                'nilai_diskon' => $diskon->jumlah_diskon,
+                'nilai_diskon_rupiah' => $discountAmount
+            ];
+        }
+
+        return $result;
     }
 
     public function cancelTransaction($transaksi)

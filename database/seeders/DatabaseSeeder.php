@@ -25,10 +25,28 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
             'password' => bcrypt('password'),
         ]);
+        \App\Models\User::create([
+            'nama' => 'Aril',
+            'username' => 'Aril',
+            'role' => 'admin',
+            'password' => bcrypt('password'),
+        ]);
 
         \App\Models\User::create([
             'nama' => 'Petugas',
             'username' => 'petugas',
+            'role' => 'petugas',
+            'password' => bcrypt('password'),
+        ]);
+        \App\Models\User::create([
+            'nama' => 'Dzilan',
+            'username' => 'Dzilan',
+            'role' => 'petugas',
+            'password' => bcrypt('password'),
+        ]);
+        \App\Models\User::create([
+            'nama' => 'Akbar',
+            'username' => 'Akbar',
             'role' => 'petugas',
             'password' => bcrypt('password'),
         ]);
@@ -44,6 +62,21 @@ class DatabaseSeeder extends Seeder
             'alamat' => 'Kalipucang',
             'nomor_tlp' => '082288866677',
         ]);
+        \App\Models\Pelanggan::create([
+            'nama' => 'Fahri',
+            'alamat' => 'Paledah',
+            'nomor_tlp' => '082288866679',
+        ]);
+        \App\Models\Pelanggan::create([
+            'nama' => 'Defan',
+            'alamat' => 'Banjarsari',
+            'nomor_tlp' => '082288866672',
+        ]);
+        \App\Models\Pelanggan::create([
+            'nama' => 'Megi',
+            'alamat' => 'Kalipucang',
+            'nomor_tlp' => '082288866671',
+        ]);
 
         \App\Models\Kategori::create([
             'nama_kategori' => 'Makanan',
@@ -51,6 +84,15 @@ class DatabaseSeeder extends Seeder
 
         \App\Models\Kategori::create([
             'nama_kategori' => 'Minuman',
+        ]);
+        \App\Models\Kategori::create([
+            'nama_kategori' => 'Kemasan',
+        ]);
+        \App\Models\Kategori::create([
+            'nama_kategori' => 'Kebutuhan Pokok',
+        ]);
+        \App\Models\Kategori::create([
+            'nama_kategori' => 'Ice Cream',
         ]);
 
         \App\Models\Produk::create([
@@ -62,9 +104,27 @@ class DatabaseSeeder extends Seeder
 
         \App\Models\Produk::create([
             'kategori_id' => 2,
-            'kode_produk' => '1002',
-            'nama_produk' => 'Le Mineral',
-            'harga' => 3500
+    'kode_produk' => '1002',
+    'nama_produk' => 'Le Mineral',
+    'harga_jual' => 3500
+        ]);
+        \App\Models\Produk::create([
+            'kategori_id' => 3,
+    'kode_produk' => '1003',
+    'nama_produk' => 'Box Kertas',
+    'harga_jual' => 3500
+        ]);
+        \App\Models\Produk::create([
+            'kategori_id' => 4,
+    'kode_produk' => '1004',
+    'nama_produk' => 'Telur',
+    'harga_jual' => 15000
+        ]);
+        \App\Models\Produk::create([
+            'kategori_id' => 5,
+            'kode_produk' => '1005',
+            'nama_produk' => 'Magnum',
+            'harga' => 1500
         ]);
 
         \App\Models\Stok::create([
@@ -80,6 +140,24 @@ class DatabaseSeeder extends Seeder
             'jumlah' => 100,
             'tanggal' => date('Y-m-d', strtotime('-1 week'))
         ]);
+        \App\Models\Stok::create([
+            'produk_id' => 3,
+            'nama_suplier' => 'Agen Telur',
+            'jumlah' => 100,
+            'tanggal' => date('Y-m-d', strtotime('-1 week'))
+        ]);
+        \App\Models\Stok::create([
+            'produk_id' => 4,
+            'nama_suplier' => 'Mang Supri',
+            'jumlah' => 100,
+            'tanggal' => date('Y-m-d', strtotime('-1 week'))
+        ]);
+        \App\Models\Stok::create([
+            'produk_id' => 5,
+            'nama_suplier' => 'Agen Ice Cream',
+            'jumlah' => 100,
+            'tanggal' => date('Y-m-d', strtotime('-1 week'))
+        ]);
 
         \App\Models\Produk::where('id', 1)->update(
             [
@@ -88,6 +166,21 @@ class DatabaseSeeder extends Seeder
         );
 
         \App\Models\Produk::where('id', 2)->update(
+            [
+                'stok' => 100,
+            ]
+        );
+        \App\Models\Produk::where('id', 3)->update(
+            [
+                'stok' => 100,
+            ]
+        );
+        \App\Models\Produk::where('id', 4)->update(
+            [
+                'stok' => 100,
+            ]
+        );
+        \App\Models\Produk::where('id', 5)->update(
             [
                 'stok' => 100,
             ]

@@ -39,14 +39,27 @@
                 
                 <div class="form-group">
                     <label class="font-weight-semibold text-dark">
-                        <i class="fas fa-money-bill-wave text-warning mr-1"></i>
-                        Harga Produk
+                        <i class="fas fa-money-bill-wave text-primary mr-1"></i>
+                        Harga Modal
                         <span class="text-danger">*</span>
                     </label>
-                    <x-input name="harga" type="text" class="form-control-lg" />
+                    <x-input name="harga_modal" type="text" class="form-control-lg" />
                     <small class="form-text text-muted">
                         <i class="fas fa-info-circle mr-1"></i>
-                        Masukkan harga dalam format Rupiah
+                        Masukkan harga modal dalam format Rupiah
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-semibold text-dark">
+                        <i class="fas fa-money-bill-wave text-success mr-1"></i>
+                        Harga Jual
+                        <span class="text-danger">*</span>
+                    </label>
+                    <x-input name="harga_jual" type="text" class="form-control-lg" />
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Masukkan harga jual dalam format Rupiah
                     </small>
                 </div>
                 

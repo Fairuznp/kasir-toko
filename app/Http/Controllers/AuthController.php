@@ -17,10 +17,9 @@ class AuthController extends Controller
         if (Auth::attempt($cred, $request->remember)) {
             return redirect('/');
         }
-
         return back()->withErrors([
-            'username' => 'Username atau Password yang diberikan salah.',
-        ])->onlyInput('username');
+            'password' => 'Password yang diberikan salah.',
+        ])->onlyInput('password');
     }
 
     public function logout(Request $request)

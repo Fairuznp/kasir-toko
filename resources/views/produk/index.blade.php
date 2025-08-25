@@ -48,58 +48,15 @@
         <div class="card-body p-0">
             <!-- Mobile view -->
             <div class="d-block d-lg-none">
-                @foreach ($produks as $key => $produk)
-                    <div class="card m-3 shadow-sm">
+                @foreach ($produks as $produk)
+                    <div class="card mb-2">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h6 class="card-title mb-1 text-primary">{{ $produk->nama_produk }}</h6>
-                                    <small class="text-muted">{{ $produk->kode_produk }}</small>
-                                </div>
-                                <div class="text-right">
-                                    <a href="{{ route('produk.edit', ['produk' => $produk->id]) }}" class="btn btn-xs text-success p-1 mr-1">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" data-toggle="modal" data-target="#modalDelete"
-                                            data-url="{{ route('produk.destroy', ['produk' => $produk->id]) }}"
-                                            class="btn btn-xs text-danger p-1 btn-delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-2">
-                                <div class="col-6">
-                                    <small class="text-muted">Kategori:</small>
-                                    <div class="font-weight-bold">{{ $produk->nama_kategori }}</div>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted">Harga:</small>
-                                    <div class="font-weight-bold text-success">{{ $produk->harga }}</div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-2">
-                                <div class="col-6">
-                                    <small class="text-muted">Stok:</small>
-                                    <div class="font-weight-bold">{{ $produk->stok }}</div>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted">QR Code:</small>
-                                    <div class="mt-1">
-                                        <a href="{{ route('produk.qr.download', $produk->kode_produk) }}" class="btn btn-xs btn-outline-primary">
-                                            <i class="fas fa-download mr-1"></i>Download
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- QR Code Preview for Mobile -->
-                            <div class="text-center mt-2">
-                                <div class="d-inline-block p-2 bg-white border rounded">
-                                    {!! QrCode::format('svg')->size(60)->generate($produk->kode_produk) !!}
-                                </div>
-                            </div>
+                            <h5 class="card-title">{{ $produk->nama_produk }}</h5>
+                            <p class="card-text">
+                                <strong>Harga Modal:</strong> {{ number_format($produk->harga_modal, 0, ',', '.') }}<br>
+                                <strong>Harga Jual:</strong> {{ number_format($produk->harga_jual, 0, ',', '.') }}<br>
+                                <strong>Stok:</strong> {{ $produk->stok }}
+                            </p>
                         </div>
                     </div>
                 @endforeach
@@ -116,7 +73,8 @@
                                 <th>QR CODE</th>
                                 <th>Nama Produk</th>
                                 <th>Kategori</th>
-                                <th>Harga</th>
+                                <th>Harga Modal</th>
+                                <th>Harga Jual</th>
                                 <th>Stok</th>
                                 <th></th>
                             </tr>
@@ -135,7 +93,8 @@
                                     </td>
                                     <td>{{ $produk->nama_produk }}</td>
                                     <td>{{ $produk->nama_kategori }}</td>
-                                    <td>{{ $produk->harga }}</td>
+                                    <td>{{ number_format($produk->harga_modal, 0, ',', '.') }}</td>
+                                    <td>{{ number_format($produk->harga_jual, 0, ',', '.') }}</td>
                                     <td>{{ $produk->stok }}</td>
                                     <td class="text-right">
                                         <a href="{{ route('produk.edit', ['produk' => $produk->id]) }}"

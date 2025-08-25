@@ -39,7 +39,8 @@ class ProdukController extends Controller
         $request->validate([
             'kode_produk' => ['required', 'max:250', 'unique:produks'],
             'nama_produk' => ['required', 'max:150'],
-            'harga'       => ['required', 'numeric'],
+            'harga_modal' => ['required', 'numeric'],
+            'harga_jual'  => ['required', 'numeric'],
             'kategori_id' => ['required', 'exists:kategoris,id'],
         ]);
 
@@ -68,7 +69,8 @@ class ProdukController extends Controller
         $request->validate([
             'kode_produk' => ['required', 'max:250', 'unique:produks,kode_produk,' . $produk->id],
             'nama_produk' => ['required', 'max:150'],
-            'harga'       => ['required', 'numeric'],
+            'harga_modal' => ['required', 'numeric'],
+            'harga_jual'  => ['required', 'numeric'],
             'kategori_id' => ['required', 'exists:kategoris,id'],
         ]);
 

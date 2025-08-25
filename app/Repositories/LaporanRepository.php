@@ -20,13 +20,16 @@ class LaporanRepository
     public function getLaporanBulanan($bulan, $tahun)
     {
         return Penjualan::select(
+            DB::raw("DATE_FORMAT(tanggal, '%d/%m/%Y') as tgl"),
             DB::raw('COUNT(id) as jumlah_transaksi'),
-            DB::raw('SUM(total) as jumlah_total'),
-            DB::raw("DATE_FORMAT(tanggal, '%d/%m/%Y') tgl")
+            DB::raw("SUM(CASE WHEN status = 'selesai' THEN 1 ELSE 0 END) as transaksi_berhasil"),
+            DB::raw("SUM(CASE WHEN status = 'batal' THEN 1 ELSE 0 END) as transaksi_batal"),
+            DB::raw("SUM(CASE WHEN status != 'batal' THEN total ELSE 0 END) as jumlah_total")
         )
             ->whereMonth('tanggal', $bulan)
             ->whereYear('tanggal', $tahun)
             ->groupBy('tgl')
+            ->orderBy('tgl')
             ->get();
     }
 }

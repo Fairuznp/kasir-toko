@@ -26,6 +26,11 @@ class Penjualan extends Model
         'nilai_diskon',
     ];
 
+    public function detilPenjualan()
+    {
+        return $this->hasMany(DetilPenjualan::class);
+    }
+
     public function diskon()
     {
         return $this->belongsTo(Diskon::class);

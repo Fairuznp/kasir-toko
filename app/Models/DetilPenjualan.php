@@ -14,8 +14,11 @@ class DetilPenjualan extends Model
     protected $fillable = [
         'penjualan_id',
         'produk_id',
+        'diskon_id',
+        'nama_diskon',
+        'nilai_diskon',
         'jumlah',
-        'harga_produk',
+        'harga_jual',
         'subtotal',
     ];
 }
