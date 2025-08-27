@@ -228,7 +228,9 @@
             title,
             quantity,
             price,
-            total_price
+            subtotal,
+            diskon_applied,
+            harga_setelah_diskon
         } = item;
 
         let btn = `<div class="btn-group btn-group-sm" role="group">
@@ -243,6 +245,12 @@
                         </button>
                     </div>`;
 
+        let subtotalTampil = `${rupiah(subtotal)}`;
+        if (diskon_applied && harga_setelah_diskon < price) {
+            const subtotalSebelumDiskon = price * quantity;
+            subtotalTampil = `<span style='text-decoration:line-through;color:#dc3545'>${rupiah(subtotalSebelumDiskon)}</span> <span class='text-success font-weight-bold'>${rupiah(subtotal)}</span>`;
+        }
+
         const row = `<tr>
                         <td>
                             <div>${title}</div>
@@ -250,7 +258,7 @@
                         </td>
                         <td class="text-center">${quantity}x</td>
                         <td class="text-right d-none d-sm-table-cell">${rupiah(price)}</td>
-                        <td class="text-right font-weight-bold">${rupiah(total_price)}</td>
+                        <td class="text-right font-weight-bold">${subtotalTampil}</td>
                         <td class="text-center">${btn}</td>
                     </tr>`;
 

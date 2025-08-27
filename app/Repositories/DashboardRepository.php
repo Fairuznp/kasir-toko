@@ -49,4 +49,56 @@ class DashboardRepository
             ->groupBy('tgl')
             ->get();
     }
+    // Pengeluaran stok per bulan
+    public function getPengeluaranStokPerBulan()
+    {
+        $tahun = date('Y');
+        $result = DB::table('stoks')
+            ->join('produks', 'stoks.produk_id', '=', 'produks.id')
+            ->select(
+                DB::raw('MONTH(stoks.tanggal) as bulan'),
+                DB::raw('YEAR(stoks.tanggal) as tahun'),
+                DB::raw('SUM(stoks.jumlah * produks.harga_modal) as total_pengeluaran')
+            )
+            ->whereYear('stoks.tanggal', $tahun)
+            ->groupBy('tahun', 'bulan')
+            ->orderBy('bulan', 'asc')
+            ->get();
+
+        // Buat array semua bulan
+        $dataBulan = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $dataBulan[$i] = 0;
+        }
+        foreach ($result as $row) {
+            $dataBulan[(int)$row->bulan] = (int)$row->total_pengeluaran;
+        }
+
+        // Return array bulan dan total_pengeluaran
+        $output = [];
+        foreach ($dataBulan as $bulan => $total) {
+            $output[] = (object) [
+                'bulan' => $bulan,
+                'tahun' => (int)$tahun,
+                'total_pengeluaran' => $total
+            ];
+        }
+        return $output;
+    }
+
+    // Produk terjual bulan ini
+    public function getProdukTerjualBulanIni()
+    {
+        $bulan = date('m');
+        $tahun = date('Y');
+        return DB::table('detil_penjualans')
+            ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+            ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
+            ->select('produks.nama_produk', DB::raw('SUM(detil_penjualans.jumlah) as total_terjual'))
+            ->whereMonth('penjualans.tanggal', $bulan)
+            ->whereYear('penjualans.tanggal', $tahun)
+            ->groupBy('produks.nama_produk')
+            ->orderByDesc('total_terjual')
+            ->get();
+    }
 }

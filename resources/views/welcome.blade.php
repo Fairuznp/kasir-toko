@@ -284,6 +284,17 @@
         </div>
         
         <div class="chart-card animate-fade-in mt-4">
+    <div class="chart-card animate-fade-in mt-4">
+        <div class="chart-header">
+            <div class="chart-icon">
+                <i class="fas fa-shopping-basket"></i>
+            </div>
+            <h3 class="chart-title">Produk Terjual Bulan Ini</h3>
+        </div>
+        <div style="position: relative; height: 400px;">
+            <canvas id="produkTerjualChart"></canvas>
+        </div>
+    </div>
             <div class="chart-header">
                 <div class="chart-icon">
                     <i class="fas fa-chart-line"></i>
@@ -294,6 +305,18 @@
                 <canvas id="myChart"></canvas>
             </div>
         </div>
+
+        <div class="chart-card animate-fade-in mt-4">
+            <div class="chart-header">
+                <div class="chart-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <h3 class="chart-title">Pengeluaran per Bulan</h3>
+            </div>
+            <div style="position: relative; height: 400px;">
+                <canvas id="pengeluaranChart"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -301,8 +324,82 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var ctx = document.getElementById('myChart').getContext('2d');
-        
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var pengeluaranCtx = document.getElementById('pengeluaranChart').getContext('2d');
+    var produkTerjualCtx = document.getElementById('produkTerjualChart').getContext('2d');
+        var produkTerjualChart = new Chart(produkTerjualCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! $produk_terjual['labels'] !!},
+                datasets: [{
+                    label: "{{ $produk_terjual['label'] }}",
+                    data: {!! $produk_terjual['data'] !!},
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            color: '#374151'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10,
+                            callback: function(value) {
+                                return value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutCubic'
+                }
+            }
+        });
+
         var myChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -358,7 +455,79 @@
                             color: '#6b7280',
                             padding: 10,
                             callback: function(value) {
-                                // Format sederhana yang pasti bekerja
+                                return 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutCubic'
+                }
+            }
+        });
+
+        var pengeluaranChart = new Chart(pengeluaranCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! $pengeluaran_stok['labels'] !!},
+                datasets: [{
+                    label: "{{ $pengeluaran_stok['label'] }}",
+                    data: {!! $pengeluaran_stok['data'] !!},
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderColor: '#10b981',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            color: '#374151'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10,
+                            callback: function(value) {
                                 return 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                             }
                         }
