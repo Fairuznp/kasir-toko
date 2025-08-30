@@ -33,6 +33,14 @@
         <th colspan="5">Jumlah Total</th>
         <th>{{ number_format($penjualan->sum('jumlah_total'), 0, ',', '.') }}</th>
     </tr>
+    <tr>
+        <th colspan="5">Total Pengeluaran</th>
+        <th>{{ number_format($keuntunganKerugian['total_pengeluaran'] ?? 0, 0, ',', '.') }}</th>
+    </tr>
+    <tr>
+        <th colspan="5">Keuntungan/Kerugian</th>
+        <th>{{ number_format($keuntunganKerugian['keuntungan_kerugian'] ?? 0, 0, ',', '.') }}</th>
+    </tr>
 </tfoot>
 
 </table>

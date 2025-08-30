@@ -284,17 +284,6 @@
         </div>
         
         <div class="chart-card animate-fade-in mt-4">
-    <div class="chart-card animate-fade-in mt-4">
-        <div class="chart-header">
-            <div class="chart-icon">
-                <i class="fas fa-shopping-basket"></i>
-            </div>
-            <h3 class="chart-title">Produk Terjual Bulan Ini</h3>
-        </div>
-        <div style="position: relative; height: 400px;">
-            <canvas id="produkTerjualChart"></canvas>
-        </div>
-    </div>
             <div class="chart-header">
                 <div class="chart-icon">
                     <i class="fas fa-chart-line"></i>
@@ -306,15 +295,43 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-card animate-fade-in mt-4">
+                    <div class="chart-header">
+                        <div class="chart-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <h3 class="chart-title">Pengeluaran Stok per Bulan</h3>
+                    </div>
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="pengeluaranChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card animate-fade-in mt-4">
+                    <div class="chart-header">
+                        <div class="chart-icon">
+                            <i class="fas fa-shopping-basket"></i>
+                        </div>
+                        <h3 class="chart-title">Produk Terjual Bulan Ini</h3>
+                    </div>
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="produkTerjualChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="chart-card animate-fade-in mt-4">
             <div class="chart-header">
                 <div class="chart-icon">
-                    <i class="fas fa-coins"></i>
+                    <i class="fas fa-chart-bar"></i>
                 </div>
-                <h3 class="chart-title">Pengeluaran per Bulan</h3>
+                <h3 class="chart-title">Keuntungan/Kerugian per Bulan</h3>
             </div>
             <div style="position: relative; height: 400px;">
-                <canvas id="pengeluaranChart"></canvas>
+                <canvas id="keuntunganChart"></canvas>
             </div>
         </div>
     </div>
@@ -324,81 +341,10 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    var ctx = document.getElementById('myChart').getContext('2d');
-    var pengeluaranCtx = document.getElementById('pengeluaranChart').getContext('2d');
-    var produkTerjualCtx = document.getElementById('produkTerjualChart').getContext('2d');
-        var produkTerjualChart = new Chart(produkTerjualCtx, {
-            type: 'bar',
-            data: {
-                labels: {!! $produk_terjual['labels'] !!},
-                datasets: [{
-                    label: "{{ $produk_terjual['label'] }}",
-                    data: {!! $produk_terjual['data'] !!},
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: '#3b82f6',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        align: 'end',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: {
-                                size: 13,
-                                weight: '500'
-                            },
-                            color: '#374151'
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f1f5f9',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            },
-                            color: '#6b7280',
-                            padding: 10,
-                            callback: function(value) {
-                                return value;
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            },
-                            color: '#6b7280',
-                            padding: 10
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
-                animation: {
-                    duration: 1500,
-                    easing: 'easeInOutCubic'
-                }
-            }
-        });
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var produkTerjualCtx = document.getElementById('produkTerjualChart').getContext('2d');
+        var keuntunganCtx = document.getElementById('keuntunganChart').getContext('2d');
+        var pengeluaranCtx = document.getElementById('pengeluaranChart').getContext('2d');
 
         var myChart = new Chart(ctx, {
             type: 'line',
@@ -483,16 +429,61 @@
             }
         });
 
-        var pengeluaranChart = new Chart(pengeluaranCtx, {
-            type: 'bar',
+        var produkTerjualChart = new Chart(produkTerjualCtx, {
+            type: 'doughnut',
             data: {
-                labels: {!! $pengeluaran_stok['labels'] !!},
+                labels: {!! $produk_terjual['labels'] !!},
                 datasets: [{
-                    label: "{{ $pengeluaran_stok['label'] }}",
-                    data: {!! $pengeluaran_stok['data'] !!},
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                    borderColor: '#10b981',
+                    label: "{{ $produk_terjual['label'] }}",
+                    data: {!! $produk_terjual['data'] !!},
+                    backgroundColor: [
+                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#6366f1', '#f472b6', '#fbbf24', '#a3e635', '#f87171', '#34d399', '#818cf8'
+                    ],
+                    borderColor: '#fff',
                     borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            color: '#374151'
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutCubic'
+                }
+            }
+        });
+
+        var keuntunganChart = new Chart(keuntunganCtx, {
+            type: 'line',
+            data: {
+                labels: {!! $keuntungan_stok['labels'] !!},
+                datasets: [{
+                    label: "{{ $keuntungan_stok['label'] }}",
+                    data: {!! $keuntungan_stok['data'] !!},
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ef4444',
+                    pointBorderColor: '#ef4444',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: false,
+                    tension: 0.3
                 }]
             },
             options: {
@@ -528,7 +519,84 @@
                             color: '#6b7280',
                             padding: 10,
                             callback: function(value) {
-                                return 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutCubic'
+                }
+            }
+        });
+
+        var pengeluaranChart = new Chart(pengeluaranCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! $pengeluaran_stok['labels'] !!},
+                datasets: [{
+                    label: "{{ $pengeluaran_stok['label'] }}",
+                    data: {!! $pengeluaran_stok['data'] !!},
+                    backgroundColor: '#ef4444',
+                    borderColor: '#c53030',
+                    borderWidth: 2,
+                    hoverBackgroundColor: '#f56565',
+                    hoverBorderColor: '#c53030',
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            color: '#374151'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10,
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
                             }
                         }
                     },

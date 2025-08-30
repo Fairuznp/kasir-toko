@@ -32,4 +32,39 @@ class LaporanRepository
             ->orderBy('tgl')
             ->get();
     }
+    // Laporan produk terjual per bulan
+    public function getLaporanProdukBulanan($bulan, $tahun)
+    {
+        return DB::table('detil_penjualans')
+            ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+            ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
+            ->select('produks.nama_produk', DB::raw('SUM(detil_penjualans.jumlah) as total_terjual'))
+            ->whereMonth('penjualans.tanggal', $bulan)
+            ->whereYear('penjualans.tanggal', $tahun)
+            ->groupBy('produks.nama_produk')
+            ->orderByDesc('total_terjual')
+            ->get();
+    }
+
+    public function getKeuntunganKerugianBulanan($bulan, $tahun)
+    {
+        // Total transaksi (omzet) bulan ini
+        $totalTransaksi = Penjualan::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->where('status', '!=', 'batal')
+            ->sum('total');
+
+        // Total pengeluaran stok bulan ini
+        $totalPengeluaran = DB::table('stoks')
+            ->join('produks', 'stoks.produk_id', '=', 'produks.id')
+            ->whereMonth('stoks.tanggal', $bulan)
+            ->whereYear('stoks.tanggal', $tahun)
+            ->sum(DB::raw('stoks.jumlah * produks.harga_modal'));
+
+        return [
+            'total_transaksi' => $totalTransaksi,
+            'total_pengeluaran' => $totalPengeluaran,
+            'keuntungan_kerugian' => $totalTransaksi - $totalPengeluaran
+        ];
+    }
 }

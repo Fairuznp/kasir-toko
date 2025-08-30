@@ -30,8 +30,37 @@ class LaporanController extends Controller
 
     public function bulanan(Request $request)
     {
-        $data = $this->laporanService->getLaporanBulanan($request->bulan, $request->tahun);
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+        $data = $this->laporanService->getLaporanBulanan($bulan, $tahun);
+        $keuntunganKerugian = $this->laporanService->getKeuntunganKerugianBulanan($bulan, $tahun);
+        return view('laporan.bulanan', array_merge($data, [
+            'keuntunganKerugian' => $keuntunganKerugian,
+            'tahun' => $tahun
+        ]));
+    }
 
-        return view('laporan.bulanan', $data);
+    public function produkBulanan(Request $request)
+    {
+        $bulan = $request->bulan ?? date('m');
+        $tahun = $request->tahun ?? date('Y');
+        $laporanProdukBulanan = $this->laporanService->getLaporanProdukBulanan($bulan, $tahun);
+        return view('laporan.produk_bulanan', [
+            'laporanProdukBulanan' => $laporanProdukBulanan,
+            'bulan' => $bulan,
+            'tahun' => $tahun
+        ]);
+    }
+
+    public function cetakProdukBulanan(Request $request)
+    {
+        $bulan = $request->bulan ?? date('m');
+        $tahun = $request->tahun ?? date('Y');
+        $laporanProdukBulanan = $this->laporanService->getLaporanProdukBulanan($bulan, $tahun);
+        return view('laporan.cetak_produk_bulanan', [
+            'laporanProdukBulanan' => $laporanProdukBulanan,
+            'bulan' => $bulan,
+            'tahun' => $tahun
+        ]);
     }
 }

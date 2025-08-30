@@ -64,6 +64,15 @@ class DashboardService
             $dataProdukTerjual[] = (int) $row->total_terjual;
         }
 
+        // Siapkan data chart keuntungan/kerugian
+        $keuntunganStok = $this->dashboardRepository->getKeuntunganPerBulan();
+        $labelsKeuntungan = [];
+        $dataKeuntungan = [];
+        foreach ($keuntunganStok as $row) {
+            $labelsKeuntungan[] = $nama_bulan[$row->bulan - 1] . ' ' . $row->tahun;
+            $dataKeuntungan[] = (int) $row->total_keuntungan;
+        }
+
         return [
             'user' => $user,
             'pelanggan' => $pelanggan,
@@ -84,6 +93,11 @@ class DashboardService
                 'label' => 'Produk Terjual Bulan Ini',
                 'labels' => json_encode($labelsProdukTerjual),
                 'data' => json_encode($dataProdukTerjual)
+            ],
+            'keuntungan_stok' => [
+                'label' => 'Keuntungan/Kerugian per Bulan',
+                'labels' => json_encode($labelsKeuntungan),
+                'data' => json_encode($dataKeuntungan)
             ]
         ];
     }

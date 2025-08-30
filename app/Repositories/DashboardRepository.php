@@ -101,4 +101,42 @@ class DashboardRepository
             ->orderByDesc('total_terjual')
             ->get();
     }
+    // Keuntungan/Kerugian per bulan
+    public function getKeuntunganPerBulan()
+    {
+        $tahun = date('Y');
+        // Jumlah total transaksi (omzet) per bulan
+        $result = DB::table('penjualans')
+            ->select(
+                DB::raw('MONTH(tanggal) as bulan'),
+                DB::raw('YEAR(tanggal) as tahun'),
+                DB::raw('SUM(total) as jumlah_total')
+            )
+            ->where('status', '!=', 'batal')
+            ->whereYear('tanggal', $tahun)
+            ->groupBy('tahun', 'bulan')
+            ->orderBy('bulan', 'asc')
+            ->get();
+
+        $pengeluaran = $this->getPengeluaranStokPerBulan();
+        $pengeluaran = array_values($pengeluaran); // pastikan index numerik berurutan dari 0
+        $dataBulan = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $dataBulan[$i] = 0;
+        }
+        foreach ($result as $row) {
+            $dataBulan[(int)$row->bulan] = (int)$row->jumlah_total;
+        }
+        $output = [];
+        foreach ($dataBulan as $idx => $total) {
+            $bulan = $idx;
+            $total_pengeluaran = isset($pengeluaran[$idx]) ? $pengeluaran[$idx]->total_pengeluaran : 0;
+            $output[] = (object) [
+                'bulan' => $bulan,
+                'tahun' => (int)$tahun,
+                'total_keuntungan' => $total - $total_pengeluaran
+            ];
+        }
+        return $output;
+    }
 }
