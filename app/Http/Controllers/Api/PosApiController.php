@@ -24,20 +24,41 @@ class PosApiController extends Controller
 
     public function getProduk()
     {
-        $produk = Produk::with('kategori')
-            ->where('stok', '>', 0)
-            ->get();
-        
-        return response()->json([
-            'success' => true,
-            'data' => $produk
-        ]);
+        try {
+            $produk = Produk::with('kategori')
+                ->where('stok', '>', 0)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $produk,
+                'count' => $produk->count()
+            ]);
+        } catch (\Exception $e) {
+            // Fallback tanpa relasi jika ada error
+            try {
+                $produk = Produk::where('stok', '>', 0)->get();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $produk,
+                    'count' => $produk->count(),
+                    'note' => 'Data tanpa relasi kategori'
+                ]);
+            } catch (\Exception $fallbackError) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error mengambil data produk: ' . $e->getMessage(),
+                    'fallback_error' => $fallbackError->getMessage()
+                ], 500);
+            }
+        }
     }
 
     public function getKategori()
     {
         $kategori = Kategori::all();
-        
+
         return response()->json([
             'success' => true,
             'data' => $kategori
@@ -47,7 +68,7 @@ class PosApiController extends Controller
     public function getPelanggan()
     {
         $pelanggan = Pelanggan::all();
-        
+
         return response()->json([
             'success' => true,
             'data' => $pelanggan
@@ -60,7 +81,7 @@ class PosApiController extends Controller
             ->where('tanggal_mulai', '<=', now())
             ->where('tanggal_berakhir', '>=', now())
             ->get();
-        
+
         return response()->json([
             'success' => true,
             'data' => $diskon
@@ -72,32 +93,44 @@ class PosApiController extends Controller
         try {
             // Simulasi data user (karena API tidak menggunakan auth)
             $user = (object) ['id' => 1, 'nama' => 'API User'];
-            
+
             // Buat cart dari request
             $cartData = $request->input('items', []);
             $extraInfo = $request->input('extra_info', []);
-            
+
+            // Validasi input
+            if (empty($cartData)) {
+                throw new \Exception('Items tidak boleh kosong');
+            }
+
             // Validasi stok
             foreach ($cartData as $item) {
+                if (!isset($item['produk_id']) || !isset($item['quantity'])) {
+                    throw new \Exception('Format item tidak valid. Harus ada produk_id dan quantity');
+                }
+
                 $produk = Produk::find($item['produk_id']);
-                if (!$produk || $produk->stok < $item['quantity']) {
-                    throw new \Exception('Stok produk tidak mencukupi');
+                if (!$produk) {
+                    throw new \Exception('Produk dengan ID ' . $item['produk_id'] . ' tidak ditemukan');
+                }
+                if ($produk->stok < $item['quantity']) {
+                    throw new \Exception('Stok produk "' . $produk->nama_produk . '" tidak mencukupi. Stok tersedia: ' . $produk->stok);
                 }
             }
-            
+
             // Hitung subtotal
             $subtotal = 0;
             foreach ($cartData as $item) {
                 $produk = Produk::find($item['produk_id']);
                 $subtotal += $produk->harga_jual * $item['quantity'];
             }
-            
+
             // Hitung diskon jika ada
             $discount = $this->transaksiService->calculateDiscount($extraInfo, $subtotal, $cartData);
-            
+
             // Buat transaksi
             $result = $this->transaksiService->createTransaction($user, $cartData, $request, $discount);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Transaksi berhasil',
@@ -106,7 +139,8 @@ class PosApiController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Transaksi gagal: ' . $e->getMessage()
+                'message' => 'Transaksi gagal: ' . $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null
             ], 500);
         }
     }
@@ -114,7 +148,7 @@ class PosApiController extends Controller
     public function cekStok(Request $request)
     {
         $produk = Produk::find($request->produk_id);
-        
+
         if (!$produk) {
             return response()->json([
                 'success' => false,
@@ -138,18 +172,18 @@ class PosApiController extends Controller
         try {
             $kodeDiskon = $request->input('kode_diskon');
             $items = $request->input('items', []);
-            
+
             // Cari diskon berdasarkan kode
             $diskon = Diskon::where('kode_diskon', $kodeDiskon)
                 ->where('status', 'aktif')
                 ->where('tanggal_mulai', '<=', now())
                 ->where('tanggal_berakhir', '>=', now())
                 ->first();
-                
+
             if (!$diskon) {
                 throw new \Exception('Kode diskon tidak valid atau sudah kadaluarsa');
             }
-            
+
             // Hitung subtotal
             $subtotal = 0;
             foreach ($items as $item) {
@@ -158,14 +192,14 @@ class PosApiController extends Controller
                     $subtotal += $produk->harga_jual * $item['quantity'];
                 }
             }
-            
+
             // Validasi diskon
             $validation = $diskon->isValid($subtotal, $items);
-            
+
             if (!$validation['valid']) {
                 throw new \Exception($validation['message']);
             }
-            
+
             // Hitung nilai diskon
             $nilaiDiskon = 0;
             if ($diskon->tipe_diskon === 'persentase') {
@@ -173,7 +207,7 @@ class PosApiController extends Controller
             } else {
                 $nilaiDiskon = $diskon->nilai_diskon;
             }
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
