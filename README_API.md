@@ -211,6 +211,60 @@ http://localhost:8000/api/pos
 
 ---
 
+### 8. **POST /calculate-cart**
+
+**Description**: Menghitung total keranjang dengan pajak 10%.
+
+**Request Body**:
+
+```json
+{
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 2
+        }
+    ],
+    "diskon_id": 1
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "produk_id": 1,
+                "nama_produk": "Chiki Taro",
+                "harga_jual": 5000,
+                "quantity": 2,
+                "subtotal": 10000
+            }
+        ],
+        "subtotal": 10000,
+        "diskon": {
+            "id": 1,
+            "kode_diskon": "DISKON10",
+            "nama_diskon": "Diskon 10%",
+            "nilai_diskon": 1000
+        },
+        "diskon_amount": 1000,
+        "subtotal_after_diskon": 9000,
+        "pajak": {
+            "rate": 10,
+            "title": "Pajak PPN 10%",
+            "amount": 900
+        },
+        "total": 9900
+    }
+}
+```
+
+---
+
 ## Error Handling
 
 -   Semua endpoint akan mengembalikan response dengan format berikut jika terjadi error:

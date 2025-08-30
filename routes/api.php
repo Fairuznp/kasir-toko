@@ -27,7 +27,8 @@ Route::prefix('pos')->group(function () {
     Route::get('/pelanggan', [PosApiController::class, 'getPelanggan']);
     Route::get('/diskon', [PosApiController::class, 'getDiskon']);
 
-    // Transaksi
+    // Cart & Transaksi
+    Route::post('/calculate-cart', [PosApiController::class, 'calculateCart']);
     Route::post('/transaksi', [PosApiController::class, 'createTransaksi']);
     Route::post('/cek-stok', [PosApiController::class, 'cekStok']);
     Route::post('/apply-diskon', [PosApiController::class, 'applyDiskon']);

@@ -167,6 +167,93 @@ class PosApiController extends Controller
         ]);
     }
 
+    public function calculateCart(Request $request)
+    {
+        try {
+            $items = $request->input('items', []);
+            $diskonId = $request->input('diskon_id');
+            
+            if (empty($items)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Items tidak boleh kosong'
+                ], 400);
+            }
+            
+            $subtotal = 0;
+            $cartDetails = [];
+            
+            // Hitung subtotal dan detail items
+            foreach ($items as $item) {
+                $produk = Produk::find($item['produk_id']);
+                if (!$produk) {
+                    continue;
+                }
+                
+                $itemSubtotal = $produk->harga_jual * $item['quantity'];
+                $subtotal += $itemSubtotal;
+                
+                $cartDetails[] = [
+                    'produk_id' => $produk->id,
+                    'nama_produk' => $produk->nama_produk,
+                    'harga_jual' => $produk->harga_jual,
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $itemSubtotal
+                ];
+            }
+            
+            // Hitung diskon jika ada
+            $diskonAmount = 0;
+            $diskonInfo = null;
+            if ($diskonId && $subtotal > 0) {
+                $diskon = Diskon::find($diskonId);
+                if ($diskon && $diskon->status == 'aktif') {
+                    $validation = $diskon->isValid($subtotal, $items);
+                    if ($validation['valid']) {
+                        $diskonAmount = $diskon->hitungNilaiDiskon($subtotal, $items);
+                        $diskonInfo = [
+                            'id' => $diskon->id,
+                            'kode_diskon' => $diskon->kode_diskon,
+                            'nama_diskon' => $diskon->nama_diskon,
+                            'nilai_diskon' => $diskonAmount
+                        ];
+                    }
+                }
+            }
+            
+            $subtotalAfterDiskon = $subtotal - $diskonAmount;
+            
+            // Pajak 10% dari subtotal setelah diskon (sesuai CartService)
+            $pajakPersen = 10;
+            $pajakAmount = ($subtotalAfterDiskon * $pajakPersen) / 100;
+            
+            // Total akhir
+            $total = $subtotalAfterDiskon + $pajakAmount;
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'items' => $cartDetails,
+                    'subtotal' => $subtotal,
+                    'diskon' => $diskonInfo,
+                    'diskon_amount' => $diskonAmount,
+                    'subtotal_after_diskon' => $subtotalAfterDiskon,
+                    'pajak' => [
+                        'rate' => $pajakPersen,
+                        'title' => 'Pajak PPN 10%',
+                        'amount' => $pajakAmount
+                    ],
+                    'total' => $total
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error calculating cart: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function applyDiskon(Request $request)
     {
         try {
@@ -201,12 +288,7 @@ class PosApiController extends Controller
             }
 
             // Hitung nilai diskon
-            $nilaiDiskon = 0;
-            if ($diskon->tipe_diskon === 'persentase') {
-                $nilaiDiskon = ($subtotal * $diskon->nilai_diskon) / 100;
-            } else {
-                $nilaiDiskon = $diskon->nilai_diskon;
-            }
+            $nilaiDiskon = $diskon->hitungNilaiDiskon($subtotal, $items);
 
             return response()->json([
                 'success' => true,
