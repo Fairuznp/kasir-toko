@@ -105,7 +105,7 @@ http://localhost:8000/api/pos
 
 ### 5. **POST /transaksi**
 
-**Description**: Membuat transaksi baru.
+**Description**: Membuat transaksi baru dengan sistem cart yang sama seperti kasir utama.
 
 **Request Body**:
 
@@ -140,8 +140,14 @@ http://localhost:8000/api/pos
     "message": "Transaksi berhasil",
     "data": {
         "transaksi_id": 123,
-        "total": 95000,
-        "kembalian": 5000
+        "nomor_transaksi": "TRX-20250830-001",
+        "subtotal": 45000,
+        "pajak": 4500,
+        "nilai_diskon": 5000,
+        "total": 44500,
+        "tunai": 100000,
+        "kembalian": 55500,
+        "tanggal": "2025-08-30 16:45:00"
     }
 }
 ```
@@ -265,6 +271,148 @@ http://localhost:8000/api/pos
 
 ---
 
+### 9. **GET /produk/{id}**
+
+**Description**: Mengambil detail produk berdasarkan ID.
+
+**Response**:
+
+```json
+{
+    "success": true,
+    "data": {
+        "id": 1,
+        "nama_produk": "Chiki Taro",
+        "kategori_id": 2,
+        "stok": 100,
+        "harga_jual": 5000,
+        "kategori": {
+            "id": 2,
+            "nama_kategori": "Snack"
+        }
+    }
+}
+```
+
+---
+
+### 10. **GET /produk/kategori/{kategoriId}**
+
+**Description**: Mengambil produk berdasarkan kategori.
+
+**Response**:
+
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "nama_produk": "Chiki Taro",
+            "kategori_id": 2,
+            "stok": 100,
+            "harga_jual": 5000,
+            "kategori": {
+                "id": 2,
+                "nama_kategori": "Snack"
+            }
+        }
+    ],
+    "count": 1
+}
+```
+
+---
+
+### 11. **GET /search-produk**
+
+**Description**: Mencari produk berdasarkan nama atau kode.
+
+**Query Parameters**:
+
+-   `q`: Kata kunci pencarian
+-   `kategori_id`: Filter berdasarkan kategori (opsional)
+
+**Response**:
+
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "nama_produk": "Chiki Taro",
+            "kategori_id": 2,
+            "stok": 100,
+            "harga_jual": 5000,
+            "kategori": {
+                "id": 2,
+                "nama_kategori": "Snack"
+            }
+        }
+    ],
+    "count": 1
+}
+```
+
+---
+
+### 12. **GET /metode-pembayaran**
+
+**Description**: Mengambil daftar metode pembayaran.
+
+**Response**:
+
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "id": "tunai",
+            "nama": "Tunai"
+        },
+        {
+            "id": "kartu_kredit",
+            "nama": "Kartu Kredit"
+        },
+        {
+            "id": "transfer",
+            "nama": "Transfer Bank"
+        }
+    ]
+}
+```
+
+---
+
+### 13. **POST /validate-transaksi**
+
+**Description**: Memvalidasi data transaksi sebelum disimpan.
+
+**Request Body**:
+
+```json
+{
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 2
+        }
+    ]
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": true,
+    "message": "Validasi berhasil"
+}
+```
+
+---
+
 ## Error Handling
 
 -   Semua endpoint akan mengembalikan response dengan format berikut jika terjadi error:
@@ -281,3 +429,164 @@ http://localhost:8000/api/pos
 -   Pastikan server Laravel berjalan di `http://localhost:8000` sebelum mengakses API.
 -   Gunakan Postman atau tool sejenis untuk menguji endpoint.
 -   Endpoint ini dirancang untuk digunakan oleh sistem transaksi eksternal.
+-   API menggunakan sistem cart dan business logic yang sama dengan aplikasi kasir utama.
+
+---
+
+## Contoh Penggunaan di Postman
+
+### **Test Transaksi Lengkap - Step by Step**
+
+#### **Step 1: Ambil Data Produk**
+
+```
+Method: GET
+URL: http://localhost:8000/api/pos/produk
+```
+
+**Response**: Daftar produk dengan ID dan harga
+
+#### **Step 2: Ambil Data Diskon (Opsional)**
+
+```
+Method: GET
+URL: http://localhost:8000/api/pos/diskon
+```
+
+**Response**: Daftar diskon aktif dengan ID
+
+#### **Step 3: Hitung Total Cart (Preview)**
+
+```
+Method: POST
+URL: http://localhost:8000/api/pos/calculate-cart
+Headers: Content-Type: application/json
+
+Body:
+{
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 2
+        }
+    ],
+    "diskon_id": 1
+}
+```
+
+**Response**: Detail perhitungan dengan pajak 10%
+
+#### **Step 4: Buat Transaksi**
+
+```
+Method: POST
+URL: http://localhost:8000/api/pos/transaksi
+Headers: Content-Type: application/json
+
+Body:
+{
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 2
+        }
+    ],
+    "extra_info": {
+        "diskon": {
+            "id": 1
+        }
+    },
+    "pelanggan_id": 1,
+    "metode_pembayaran": "tunai",
+    "jumlah_bayar": 100000
+}
+```
+
+**Response**: Detail transaksi dengan nomor transaksi dan kembalian
+
+---
+
+## Contoh Skenario Testing
+
+### **Skenario 1: Transaksi Sederhana (Tanpa Diskon)**
+
+```json
+{
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 3
+        }
+    ],
+    "pelanggan_id": 1,
+    "metode_pembayaran": "tunai",
+    "jumlah_bayar": 50000
+}
+```
+
+### **Skenario 2: Transaksi dengan Diskon**
+
+```json
+{
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 5
+        },
+        {
+            "produk_id": 2,
+            "quantity": 2
+        }
+    ],
+    "extra_info": {
+        "diskon": {
+            "id": 1
+        }
+    },
+    "pelanggan_id": 1,
+    "metode_pembayaran": "kartu_kredit",
+    "jumlah_bayar": 100000
+}
+```
+
+### **Skenario 3: Transaksi Multiple Items**
+
+```json
+{
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 2
+        },
+        {
+            "produk_id": 2,
+            "quantity": 1
+        },
+        {
+            "produk_id": 3,
+            "quantity": 3
+        }
+    ],
+    "pelanggan_id": 2,
+    "metode_pembayaran": "transfer",
+    "jumlah_bayar": 200000
+}
+```
+
+---
+
+## Expected Results
+
+### **✅ Yang Akan Terjadi Setelah Transaksi Berhasil:**
+
+1. **Database Update**: Data tersimpan di table `penjualans` dan `detil_penjualans`
+2. **Stock Update**: Stok produk otomatis berkurang sesuai quantity
+3. **Response Complete**: Mendapat nomor transaksi, total, pajak, dan kembalian
+4. **Business Logic**: Pajak 10% dan diskon dihitung sesuai sistem kasir utama
+
+### **⚠️ Error yang Mungkin Terjadi:**
+
+-   **Stok tidak mencukupi**: "Stok produk tidak mencukupi"
+-   **Cash kurang**: "Cash tidak mencukupi"
+-   **Produk tidak ditemukan**: "Produk dengan ID {id} tidak ditemukan"
+-   **Diskon tidak valid**: "Kode diskon tidak valid atau sudah kadaluarsa"

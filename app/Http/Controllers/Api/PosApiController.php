@@ -10,6 +10,7 @@ use App\Models\Diskon;
 use App\Services\TransaksiService;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Jackiedo\Cart\Facades\Cart;
 
 class PosApiController extends Controller
 {
@@ -77,15 +78,25 @@ class PosApiController extends Controller
 
     public function getDiskon()
     {
-        $diskon = Diskon::where('status', 'aktif')
-            ->where('tanggal_mulai', '<=', now())
-            ->where('tanggal_berakhir', '>=', now())
-            ->get();
+        try {
+            // Menggunakan kolom yang sesuai dengan model Diskon
+            $diskon = Diskon::select('id', 'kode_diskon', 'jenis_diskon', 'jumlah_diskon', 'minimal_pembelian', 'status', 'kategori_id', 'produk_id')
+                ->where('status', true)
+                ->where('tanggal_mulai', '<=', now())
+                ->where('tanggal_selesai', '>=', now())
+                ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $diskon
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $diskon,
+                'count' => $diskon->count()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error mengambil data diskon: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function createTransaksi(Request $request)
@@ -93,17 +104,29 @@ class PosApiController extends Controller
         try {
             // Simulasi data user (karena API tidak menggunakan auth)
             $user = (object) ['id' => 1, 'nama' => 'API User'];
+            $userId = 'api_user_' . time(); // Unique cart identifier
 
             // Buat cart dari request
             $cartData = $request->input('items', []);
             $extraInfo = $request->input('extra_info', []);
+            $pelangganId = $request->input('pelanggan_id');
+            $metodePembayaran = $request->input('metode_pembayaran', 'tunai');
+            $jumlahBayar = $request->input('jumlah_bayar', 0);
 
             // Validasi input
             if (empty($cartData)) {
                 throw new \Exception('Items tidak boleh kosong');
             }
 
-            // Validasi stok
+            if ($jumlahBayar <= 0) {
+                throw new \Exception('Jumlah bayar harus lebih dari 0');
+            }
+
+            // Clear existing cart dan buat cart baru
+            $cart = Cart::name($userId);
+            $cart->destroy();
+
+            // Tambahkan items ke cart
             foreach ($cartData as $item) {
                 if (!isset($item['produk_id']) || !isset($item['quantity'])) {
                     throw new \Exception('Format item tidak valid. Harus ada produk_id dan quantity');
@@ -116,25 +139,56 @@ class PosApiController extends Controller
                 if ($produk->stok < $item['quantity']) {
                     throw new \Exception('Stok produk "' . $produk->nama_produk . '" tidak mencukupi. Stok tersedia: ' . $produk->stok);
                 }
+
+                // Tambah ke cart
+                $cart->addItem([
+                    'id' => $produk->id,
+                    'title' => $produk->nama_produk,
+                    'quantity' => $item['quantity'],
+                    'price' => $produk->harga_jual
+                ]);
             }
 
-            // Hitung subtotal
-            $subtotal = 0;
-            foreach ($cartData as $item) {
-                $produk = Produk::find($item['produk_id']);
-                $subtotal += $produk->harga_jual * $item['quantity'];
+            // Apply tax (10%)
+            $cart->applyTax([
+                'id' => 1,
+                'rate' => 10,
+                'title' => 'Pajak PPN 10%'
+            ]);
+
+            // Set extra info (pelanggan, diskon)
+            if ($pelangganId) {
+                $extraInfo['pelanggan'] = ['id' => $pelangganId];
             }
+            $cart->setExtraInfo($extraInfo);
 
             // Hitung diskon jika ada
-            $discount = $this->transaksiService->calculateDiscount($extraInfo, $subtotal, $cartData);
+            $discount = $this->transaksiService->calculateDiscount($extraInfo, $cart->getDetails()->get('subtotal'), $cart->getDetails()->get('items'));
 
-            // Buat transaksi
-            $result = $this->transaksiService->createTransaction($user, $cartData, $request, $discount);
+            // Buat request object untuk compatibility dengan service
+            $requestObj = new \Illuminate\Http\Request();
+            $requestObj->merge([
+                'cash' => $jumlahBayar,
+                'metode_pembayaran' => $metodePembayaran
+            ]);
+
+            // Buat transaksi menggunakan service yang ada
+            $result = $this->transaksiService->createTransaction($user, $cart, $requestObj, $discount);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Transaksi berhasil',
-                'data' => $result
+                'data' => [
+                    'transaksi_id' => $result->id,
+                    'nomor_transaksi' => $result->nomor_transaksi,
+                    'subtotal' => $result->subtotal,
+                    'pajak' => $result->pajak,
+                    'nilai_diskon' => $result->nilai_diskon,
+                    'total' => $result->total,
+                    'tunai' => $result->tunai,
+                    'kembalian' => $result->kembalian,
+                    'tanggal' => $result->tanggal
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -260,11 +314,15 @@ class PosApiController extends Controller
             $kodeDiskon = $request->input('kode_diskon');
             $items = $request->input('items', []);
 
+            if (!$kodeDiskon) {
+                throw new \Exception('Kode diskon tidak boleh kosong');
+            }
+
             // Cari diskon berdasarkan kode
             $diskon = Diskon::where('kode_diskon', $kodeDiskon)
-                ->where('status', 'aktif')
+                ->where('status', true)
                 ->where('tanggal_mulai', '<=', now())
-                ->where('tanggal_berakhir', '>=', now())
+                ->where('tanggal_selesai', '>=', now())
                 ->first();
 
             if (!$diskon) {
@@ -295,7 +353,8 @@ class PosApiController extends Controller
                 'data' => [
                     'diskon_id' => $diskon->id,
                     'kode_diskon' => $diskon->kode_diskon,
-                    'nama_diskon' => $diskon->nama_diskon,
+                    'jenis_diskon' => $diskon->jenis_diskon,
+                    'jumlah_diskon' => $diskon->jumlah_diskon,
                     'nilai_diskon' => $nilaiDiskon,
                     'subtotal_setelah_diskon' => $subtotal - $nilaiDiskon
                 ]
@@ -305,6 +364,152 @@ class PosApiController extends Controller
                 'success' => false,
                 'message' => $e->getMessage()
             ], 400);
+        }
+    }
+
+    public function getProdukByKategori($kategoriId)
+    {
+        try {
+            $produk = Produk::with('kategori')
+                ->where('kategori_id', $kategoriId)
+                ->where('stok', '>', 0)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $produk,
+                'count' => $produk->count()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error mengambil produk: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function searchProduk(Request $request)
+    {
+        try {
+            $query = $request->input('q', '');
+            $kategoriId = $request->input('kategori_id');
+
+            $produk = Produk::with('kategori')
+                ->where('stok', '>', 0)
+                ->when($query, function ($q) use ($query) {
+                    return $q->where('nama_produk', 'like', '%' . $query . '%')
+                            ->orWhere('kode_produk', 'like', '%' . $query . '%');
+                })
+                ->when($kategoriId, function ($q) use ($kategoriId) {
+                    return $q->where('kategori_id', $kategoriId);
+                })
+                ->limit(20)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $produk,
+                'count' => $produk->count()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error search produk: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getDetailProduk($id)
+    {
+        try {
+            $produk = Produk::with('kategori')->find($id);
+
+            if (!$produk) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Produk tidak ditemukan'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $produk
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error mengambil detail produk: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getMetodePembayaran()
+    {
+        try {
+            $metode = [
+                ['id' => 'tunai', 'nama' => 'Tunai'],
+                ['id' => 'kartu_kredit', 'nama' => 'Kartu Kredit'],
+                ['id' => 'kartu_debit', 'nama' => 'Kartu Debit'],
+                ['id' => 'transfer', 'nama' => 'Transfer Bank'],
+                ['id' => 'e_wallet', 'nama' => 'E-Wallet']
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $metode
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error mengambil metode pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function validateTransaksi(Request $request)
+    {
+        try {
+            $items = $request->input('items', []);
+            $errors = [];
+
+            if (empty($items)) {
+                $errors[] = 'Items transaksi tidak boleh kosong';
+            }
+
+            foreach ($items as $index => $item) {
+                if (!isset($item['produk_id']) || !isset($item['quantity'])) {
+                    $errors[] = "Item ke-" . ($index + 1) . " harus memiliki produk_id dan quantity";
+                    continue;
+                }
+
+                $produk = Produk::find($item['produk_id']);
+                if (!$produk) {
+                    $errors[] = "Produk dengan ID {$item['produk_id']} tidak ditemukan";
+                    continue;
+                }
+
+                if ($produk->stok < $item['quantity']) {
+                    $errors[] = "Stok produk '{$produk->nama_produk}' tidak mencukupi (tersedia: {$produk->stok})";
+                }
+            }
+
+            if (!empty($errors)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $errors
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Validasi berhasil'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error validasi: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
