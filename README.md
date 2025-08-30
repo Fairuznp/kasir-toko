@@ -1,66 +1,190 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🛒 Sistem Kasir Toko
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi Point of Sale (POS) berbasis Laravel dengan sistem API yang terintegrasi untuk transaksi multi-platform.
 
-## About Laravel
+## 📋 Deskripsi Projek
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Kasir Toko** adalah sistem manajemen toko yang lengkap dengan fitur:
+- **💰 Transaksi POS** dengan perhitungan pajak 10% otomatis
+- **📦 Manajemen Produk** dan kategori
+- **👥 Manajemen Pelanggan** dan sistem diskon
+- **📊 Laporan Penjualan** dengan analytics
+- **🔌 REST API** untuk integrasi dengan sistem eksternal
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### **🏪 Sistem Kasir**
+- ✅ **Transaksi Real-time** dengan validasi stok
+- ✅ **Sistem Cart** menggunakan Jackiedo Cart
+- ✅ **Pajak 10%** otomatis untuk semua produk
+- ✅ **Sistem Diskon** dengan validasi kompleks
+- ✅ **Multiple Payment Methods** (Tunai, Kartu, Transfer, E-Wallet)
 
-## Learning Laravel
+### **📱 API Integration**
+- ✅ **13 REST API Endpoints** siap pakai
+- ✅ **Compatible** dengan aplikasi eksternal
+- ✅ **Same Business Logic** dengan web interface
+- ✅ **Real-time Stock Update** via API
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### **📊 Management Features**
+- ✅ **Dashboard Analytics** dengan chart
+- ✅ **Laporan Harian/Bulanan** 
+- ✅ **User Management** dengan role-based access
+- ✅ **Backup & Export** data
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🛠️ Tech Stack
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Framework**: Laravel 10
+- **Database**: MySQL
+- **Frontend**: AdminLTE + Bootstrap
+- **Cart System**: Jackiedo Cart
+- **Charts**: Chart.js
+- **API**: REST API dengan JSON response
 
-## Laravel Sponsors
+## 📦 Instalasi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### **Requirements**
+- PHP 8.1+
+- Composer
+- MySQL 5.7+
+- Node.js & NPM
 
-### Premium Partners
+### **Setup**
+```bash
+# Clone repository
+git clone https://github.com/Fairuznp/kasir-toko.git
+cd kasir-toko
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# Install dependencies
+composer install
+npm install
 
-## Contributing
+# Environment setup
+cp .env.example .env
+php artisan key:generate
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Database setup
+php artisan migrate
+php artisan db:seed
 
-## Code of Conduct
+# Build assets
+npm run build
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Run server
+php artisan serve
+```
 
-## Security Vulnerabilities
+## 🔧 Konfigurasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### **Database Configuration**
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=kasir_toko
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## License
+### **API Configuration**
+```env
+# Untuk sistem eksternal
+KASIR_API_URL=http://localhost:8000/api/pos
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📚 Dokumentasi
+
+### **Web Interface**
+- **URL**: `http://localhost:8000`
+- **Login**: Lihat seeder untuk kredensial default
+
+### **API Documentation**
+- **Base URL**: `http://localhost:8000/api/pos`
+- **Documentation**: [README_API.md](README_API.md)
+- **Endpoints**: 13 endpoint siap pakai
+
+## 🎯 Penggunaan
+
+### **Untuk Kasir (Web Interface)**
+1. Login ke sistem
+2. Tambah produk ke keranjang
+3. Apply diskon jika ada
+4. Pilih metode pembayaran
+5. Selesaikan transaksi
+
+### **Untuk Developer (API)**
+```bash
+# Get semua produk
+GET /api/pos/produk
+
+# Buat transaksi
+POST /api/pos/transaksi
+{
+    "items": [{"produk_id": 1, "quantity": 2}],
+    "pelanggan_id": 1,
+    "metode_pembayaran": "tunai",
+    "jumlah_bayar": 50000
+}
+```
+
+## 🏗️ Arsitektur
+
+```
+kasir-toko/
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── Api/PosApiController.php    # API Endpoints
+│   │   └── ...                         # Web Controllers
+│   ├── Models/                         # Eloquent Models
+│   ├── Services/                       # Business Logic
+│   └── Repositories/                   # Data Layer
+├── routes/
+│   ├── web.php                         # Web Routes
+│   └── api.php                         # API Routes
+└── README_API.md                       # API Documentation
+```
+
+## 🔌 Integrasi dengan Projek Lain
+
+API ini dirancang untuk digunakan oleh **sistem transaksi eksternal**:
+
+1. **Setup Projek Laravel Baru** untuk interface transaksi
+2. **Konsumsi API** menggunakan HTTP Client (Guzzle)
+3. **Gunakan Endpoint** yang tersedia untuk transaksi
+4. **Data Tersimpan** di database kasir_toko (terpusat)
+
+### **Contoh Integration**
+```php
+// Di projek eksternal
+$response = Http::post('http://localhost:8000/api/pos/transaksi', [
+    'items' => [['produk_id' => 1, 'quantity' => 2]],
+    'jumlah_bayar' => 50000
+]);
+```
+
+## 🤝 Contributing
+
+1. Fork projek
+2. Buat feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
+
+## 📝 License
+
+Projek ini menggunakan [MIT License](LICENSE).
+
+## 👨‍💻 Developer
+
+- **Fairuz Nurul Pratama** - [Fairuznp](https://github.com/Fairuznp)
+
+## 📞 Support
+
+Jika ada pertanyaan atau issue:
+- **Open Issue** di GitHub
+- **Email**: [your-email@example.com]
+- **Documentation**: [README_API.md](README_API.md)
+
+---
+
+**⭐ Star projek ini jika membantu!**

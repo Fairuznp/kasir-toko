@@ -94,10 +94,15 @@ http://localhost:8000/api/pos
         {
             "id": 1,
             "kode_diskon": "DISKON10",
-            "nama_diskon": "Diskon 10%",
-            "nilai_diskon": 10
+            "jenis_diskon": "persentase",
+            "jumlah_diskon": 10,
+            "minimal_pembelian": 50000,
+            "status": true,
+            "kategori_id": null,
+            "produk_id": null
         }
-    ]
+    ],
+    "count": 1
 }
 ```
 
@@ -208,7 +213,8 @@ http://localhost:8000/api/pos
     "data": {
         "diskon_id": 1,
         "kode_diskon": "DISKON10",
-        "nama_diskon": "Diskon 10%",
+        "jenis_diskon": "persentase",
+        "jumlah_diskon": 10,
         "nilai_diskon": 5000,
         "subtotal_setelah_diskon": 45000
     }
@@ -254,7 +260,8 @@ http://localhost:8000/api/pos
         "diskon": {
             "id": 1,
             "kode_diskon": "DISKON10",
-            "nama_diskon": "Diskon 10%",
+            "jenis_diskon": "persentase",
+            "jumlah_diskon": 10,
             "nilai_diskon": 1000
         },
         "diskon_amount": 1000,
@@ -430,6 +437,34 @@ http://localhost:8000/api/pos
 -   Gunakan Postman atau tool sejenis untuk menguji endpoint.
 -   Endpoint ini dirancang untuk digunakan oleh sistem transaksi eksternal.
 -   API menggunakan sistem cart dan business logic yang sama dengan aplikasi kasir utama.
+
+---
+
+## Ringkasan API Endpoints
+
+### **Master Data (8 Endpoints GET)**
+1. `GET /produk` - Semua produk tersedia
+2. `GET /produk/{id}` - Detail produk spesifik  
+3. `GET /produk/kategori/{kategoriId}` - Produk per kategori
+4. `GET /search-produk?q=keyword` - Pencarian produk
+5. `GET /kategori` - Daftar kategori
+6. `GET /pelanggan` - Daftar pelanggan
+7. `GET /diskon` - Diskon aktif
+8. `GET /metode-pembayaran` - Opsi pembayaran
+
+### **Transaksi & Cart (5 Endpoints POST)**
+9. `POST /calculate-cart` - Hitung total + pajak 10%
+10. `POST /validate-transaksi` - Validasi sebelum simpan
+11. `POST /cek-stok` - Cek ketersediaan stok
+12. `POST /apply-diskon` - Terapkan kode diskon  
+13. `POST /transaksi` - **Simpan transaksi ke database**
+
+### **Fitur Utama**
+- ✅ **Pajak 10%** otomatis
+- ✅ **Sistem diskon** dengan validasi
+- ✅ **Update stok** real-time
+- ✅ **Cart management** identik dengan kasir utama
+- ✅ **Database sync** dengan sistem utama
 
 ---
 
