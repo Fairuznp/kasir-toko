@@ -443,8 +443,9 @@ http://localhost:8000/api/pos
 ## Ringkasan API Endpoints
 
 ### **Master Data (8 Endpoints GET)**
+
 1. `GET /produk` - Semua produk tersedia
-2. `GET /produk/{id}` - Detail produk spesifik  
+2. `GET /produk/{id}` - Detail produk spesifik
 3. `GET /produk/kategori/{kategoriId}` - Produk per kategori
 4. `GET /search-produk?q=keyword` - Pencarian produk
 5. `GET /kategori` - Daftar kategori
@@ -453,18 +454,20 @@ http://localhost:8000/api/pos
 8. `GET /metode-pembayaran` - Opsi pembayaran
 
 ### **Transaksi & Cart (5 Endpoints POST)**
+
 9. `POST /calculate-cart` - Hitung total + pajak 10%
 10. `POST /validate-transaksi` - Validasi sebelum simpan
 11. `POST /cek-stok` - Cek ketersediaan stok
-12. `POST /apply-diskon` - Terapkan kode diskon  
+12. `POST /apply-diskon` - Terapkan kode diskon
 13. `POST /transaksi` - **Simpan transaksi ke database**
 
 ### **Fitur Utama**
-- ✅ **Pajak 10%** otomatis
-- ✅ **Sistem diskon** dengan validasi
-- ✅ **Update stok** real-time
-- ✅ **Cart management** identik dengan kasir utama
-- ✅ **Database sync** dengan sistem utama
+
+-   ✅ **Pajak 10%** otomatis
+-   ✅ **Sistem diskon** dengan validasi
+-   ✅ **Update stok** real-time
+-   ✅ **Cart management** identik dengan kasir utama
+-   ✅ **Database sync** dengan sistem utama
 
 ---
 

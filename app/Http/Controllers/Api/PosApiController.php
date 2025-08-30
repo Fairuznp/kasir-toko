@@ -226,27 +226,27 @@ class PosApiController extends Controller
         try {
             $items = $request->input('items', []);
             $diskonId = $request->input('diskon_id');
-            
+
             if (empty($items)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Items tidak boleh kosong'
                 ], 400);
             }
-            
+
             $subtotal = 0;
             $cartDetails = [];
-            
+
             // Hitung subtotal dan detail items
             foreach ($items as $item) {
                 $produk = Produk::find($item['produk_id']);
                 if (!$produk) {
                     continue;
                 }
-                
+
                 $itemSubtotal = $produk->harga_jual * $item['quantity'];
                 $subtotal += $itemSubtotal;
-                
+
                 $cartDetails[] = [
                     'produk_id' => $produk->id,
                     'nama_produk' => $produk->nama_produk,
@@ -255,7 +255,7 @@ class PosApiController extends Controller
                     'subtotal' => $itemSubtotal
                 ];
             }
-            
+
             // Hitung diskon jika ada
             $diskonAmount = 0;
             $diskonInfo = null;
@@ -274,16 +274,16 @@ class PosApiController extends Controller
                     }
                 }
             }
-            
+
             $subtotalAfterDiskon = $subtotal - $diskonAmount;
-            
+
             // Pajak 10% dari subtotal setelah diskon (sesuai CartService)
             $pajakPersen = 10;
             $pajakAmount = ($subtotalAfterDiskon * $pajakPersen) / 100;
-            
+
             // Total akhir
             $total = $subtotalAfterDiskon + $pajakAmount;
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -398,7 +398,7 @@ class PosApiController extends Controller
                 ->where('stok', '>', 0)
                 ->when($query, function ($q) use ($query) {
                     return $q->where('nama_produk', 'like', '%' . $query . '%')
-                            ->orWhere('kode_produk', 'like', '%' . $query . '%');
+                        ->orWhere('kode_produk', 'like', '%' . $query . '%');
                 })
                 ->when($kategoriId, function ($q) use ($kategoriId) {
                     return $q->where('kategori_id', $kategoriId);
