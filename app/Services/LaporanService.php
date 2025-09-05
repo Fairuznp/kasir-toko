@@ -49,9 +49,4 @@ class LaporanService
     {
         return $this->laporanRepository->getLaporanProdukBulanan($bulan, $tahun);
     }
-
-    public function getKeuntunganKerugianBulanan($bulan, $tahun)
-    {
-        return $this->laporanRepository->getKeuntunganKerugianBulanan($bulan, $tahun);
-    }
 }

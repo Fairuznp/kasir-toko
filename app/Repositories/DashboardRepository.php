@@ -101,8 +101,9 @@ class DashboardRepository
             ->orderByDesc('total_terjual')
             ->get();
     }
+
     // Keuntungan/Kerugian per bulan
-    public function getKeuntunganPerBulan()
+    public function getKeuntunganKerugianPerBulan()
     {
         $tahun = date('Y');
         // Jumlah total transaksi (omzet) per bulan
@@ -119,22 +120,31 @@ class DashboardRepository
             ->get();
 
         $pengeluaran = $this->getPengeluaranStokPerBulan();
-        $pengeluaran = array_values($pengeluaran); // pastikan index numerik berurutan dari 0
+        $pengeluaran = array_values($pengeluaran);
+        
         $dataBulan = [];
         for ($i = 1; $i <= 12; $i++) {
             $dataBulan[$i] = 0;
         }
+        
         foreach ($result as $row) {
             $dataBulan[(int)$row->bulan] = (int)$row->jumlah_total;
         }
+        
         $output = [];
         foreach ($dataBulan as $idx => $total) {
             $bulan = $idx;
-            $total_pengeluaran = isset($pengeluaran[$idx]) ? $pengeluaran[$idx]->total_pengeluaran : 0;
+            // Fix: pengeluaran array dimulai dari index 0, jadi kita perlu -1
+            $total_pengeluaran = isset($pengeluaran[$idx - 1]) ? $pengeluaran[$idx - 1]->total_pengeluaran : 0;
+            $selisih = $total - $total_pengeluaran;
+            
             $output[] = (object) [
                 'bulan' => $bulan,
                 'tahun' => (int)$tahun,
-                'total_keuntungan' => $total - $total_pengeluaran
+                'total_transaksi' => $total,
+                'total_pengeluaran' => $total_pengeluaran,
+                'keuntungan_kerugian' => $selisih,
+                'status' => $selisih >= 0 ? 'keuntungan' : 'kerugian'
             ];
         }
         return $output;

@@ -31,15 +31,24 @@
 <tfoot>
     <tr>
         <th colspan="5">Jumlah Total</th>
-        <th>{{ number_format($penjualan->sum('jumlah_total'), 0, ',', '.') }}</th>
+        <th>{{ 'Rp ' . number_format($penjualan->sum('jumlah_total'), 0, ',', '.') }}</th>
     </tr>
     <tr>
-        <th colspan="5">Total Pengeluaran</th>
-        <th>{{ number_format($keuntunganKerugian['total_pengeluaran'] ?? 0, 0, ',', '.') }}</th>
+        <th colspan="5">Jumlah Pengeluaran</th>
+        <th>{{ 'Rp ' . number_format($pengeluaran, 0, ',', '.') }}</th>
     </tr>
     <tr>
-        <th colspan="5">Keuntungan/Kerugian</th>
-        <th>{{ number_format($keuntunganKerugian['keuntungan_kerugian'] ?? 0, 0, ',', '.') }}</th>
+        <th colspan="5">Jumlah Pendapatan</th>
+        <th>{{ 'Rp ' . number_format($totalPendapatan, 0, ',', '.') }}</th>
+    </tr>
+    <tr>
+        <th colspan="5">Jumlah Keuntungan/Kerugian</th>
+        <th>
+            @php $selisih = $totalPendapatan - $pengeluaran; @endphp
+            <span style="color: {{ $selisih < 0 ? 'red' : 'green' }}; font-weight: bold;">
+                {{ 'Rp ' . number_format($selisih, 0, ',', '.') }}
+            </span>
+        </th>
     </tr>
 </tfoot>
 

@@ -10,9 +10,10 @@ class LaporanRepository
     public function getLaporanHarian($tanggal)
     {
         return Penjualan::join('users', 'users.id', 'penjualans.user_id')
-            ->join('pelanggans', 'pelanggans.id', 'penjualans.pelanggan_id')
+            ->leftJoin('pelanggans', 'pelanggans.id', 'penjualans.pelanggan_id')
             ->whereDate('tanggal', $tanggal)
-            ->select('penjualans.*', 'pelanggans.nama as nama_pelanggan', 'users.nama as nama_kasir')
+            ->where('penjualans.status', '!=', 'batal')
+            ->select('penjualans.*', DB::raw("COALESCE(pelanggans.nama, 'Anonymous') as nama_pelanggan"), 'users.nama as nama_kasir')
             ->orderBy('id')
             ->get();
     }
@@ -44,27 +45,5 @@ class LaporanRepository
             ->groupBy('produks.nama_produk')
             ->orderByDesc('total_terjual')
             ->get();
-    }
-
-    public function getKeuntunganKerugianBulanan($bulan, $tahun)
-    {
-        // Total transaksi (omzet) bulan ini
-        $totalTransaksi = Penjualan::whereMonth('tanggal', $bulan)
-            ->whereYear('tanggal', $tahun)
-            ->where('status', '!=', 'batal')
-            ->sum('total');
-
-        // Total pengeluaran stok bulan ini
-        $totalPengeluaran = DB::table('stoks')
-            ->join('produks', 'stoks.produk_id', '=', 'produks.id')
-            ->whereMonth('stoks.tanggal', $bulan)
-            ->whereYear('stoks.tanggal', $tahun)
-            ->sum(DB::raw('stoks.jumlah * produks.harga_modal'));
-
-        return [
-            'total_transaksi' => $totalTransaksi,
-            'total_pengeluaran' => $totalPengeluaran,
-            'keuntungan_kerugian' => $totalTransaksi - $totalPengeluaran
-        ];
     }
 }

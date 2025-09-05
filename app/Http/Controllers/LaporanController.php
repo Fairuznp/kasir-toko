@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\LaporanService;
+use Illuminate\Support\Facades\DB;
 
 class LaporanController extends Controller
 {
@@ -33,9 +34,18 @@ class LaporanController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
         $data = $this->laporanService->getLaporanBulanan($bulan, $tahun);
-        $keuntunganKerugian = $this->laporanService->getKeuntunganKerugianBulanan($bulan, $tahun);
+
+        $pengeluaran = DB::table('stoks')
+            ->join('produks', 'stoks.produk_id', '=', 'produks.id')
+            ->whereMonth('stoks.tanggal', $bulan)
+            ->whereYear('stoks.tanggal', $tahun)
+            ->sum(DB::raw('stoks.jumlah * produks.harga_modal'));
+
+        $totalPendapatan = collect($data['penjualan'])->sum('jumlah_total');
+
         return view('laporan.bulanan', array_merge($data, [
-            'keuntunganKerugian' => $keuntunganKerugian,
+            'pengeluaran' => $pengeluaran,
+            'totalPendapatan' => $totalPendapatan,
             'tahun' => $tahun
         ]));
     }

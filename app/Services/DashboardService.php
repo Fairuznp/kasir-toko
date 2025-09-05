@@ -65,12 +65,20 @@ class DashboardService
         }
 
         // Siapkan data chart keuntungan/kerugian
-        $keuntunganStok = $this->dashboardRepository->getKeuntunganPerBulan();
-        $labelsKeuntungan = [];
-        $dataKeuntungan = [];
-        foreach ($keuntunganStok as $row) {
-            $labelsKeuntungan[] = $nama_bulan[$row->bulan - 1] . ' ' . $row->tahun;
-            $dataKeuntungan[] = (int) $row->total_keuntungan;
+        $keuntunganKerugian = $this->dashboardRepository->getKeuntunganKerugianPerBulan();
+        $labelsKeuntunganKerugian = [];
+        $dataKeuntunganKerugian = [];
+        $colorKeuntunganKerugian = [];
+        
+        $nama_bulan = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        
+        foreach ($keuntunganKerugian as $row) {
+            $labelsKeuntunganKerugian[] = $nama_bulan[$row->bulan - 1] . ' ' . $row->tahun;
+            $dataKeuntunganKerugian[] = (int) $row->keuntungan_kerugian;
+            $colorKeuntunganKerugian[] = $row->status === 'keuntungan' ? '#10b981' : '#ef4444';
         }
 
         return [
@@ -94,10 +102,11 @@ class DashboardService
                 'labels' => json_encode($labelsProdukTerjual),
                 'data' => json_encode($dataProdukTerjual)
             ],
-            'keuntungan_stok' => [
+            'keuntungan_kerugian' => [
                 'label' => 'Keuntungan/Kerugian per Bulan',
-                'labels' => json_encode($labelsKeuntungan),
-                'data' => json_encode($dataKeuntungan)
+                'labels' => json_encode($labelsKeuntunganKerugian),
+                'data' => json_encode($dataKeuntunganKerugian),
+                'colors' => json_encode($colorKeuntunganKerugian)
             ]
         ];
     }

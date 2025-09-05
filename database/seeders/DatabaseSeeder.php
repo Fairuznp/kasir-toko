@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,234 +12,184 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        $faker = Faker::create('id_ID');
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
+        // Create 10 Users (Admin dan Petugas)
         \App\Models\User::create([
             'nama' => 'Administrator',
             'username' => 'admin',
             'role' => 'admin',
             'password' => bcrypt('password'),
         ]);
-        \App\Models\User::create([
-            'nama' => 'Aril',
-            'username' => 'Aril',
-            'role' => 'admin',
-            'password' => bcrypt('password'),
-        ]);
 
-        \App\Models\User::create([
-            'nama' => 'Petugas',
-            'username' => 'petugas',
-            'role' => 'petugas',
-            'password' => bcrypt('password'),
-        ]);
-        \App\Models\User::create([
-            'nama' => 'Dzilan',
-            'username' => 'Dzilan',
-            'role' => 'petugas',
-            'password' => bcrypt('password'),
-        ]);
-        \App\Models\User::create([
-            'nama' => 'Akbar',
-            'username' => 'Akbar',
-            'role' => 'petugas',
-            'password' => bcrypt('password'),
-        ]);
+        for ($i = 1; $i <= 9; $i++) {
+            \App\Models\User::create([
+                'nama' => $faker->name,
+                'username' => 'user' . $i,
+                'role' => $faker->randomElement(['admin', 'petugas']),
+                'password' => bcrypt('password'),
+            ]);
+        }
 
-        \App\Models\Pelanggan::create([
-            'nama' => 'Dodo Sidodo',
-            'alamat' => 'Padaherang',
-            'nomor_tlp' => '082288866677',
-        ]);
+        // Create 10 Pelanggan
+        for ($i = 1; $i <= 10; $i++) {
+            \App\Models\Pelanggan::create([
+                'nama' => $faker->name,
+                'alamat' => $faker->address,
+                'nomor_tlp' => $faker->phoneNumber,
+            ]);
+        }
 
-        \App\Models\Pelanggan::create([
-            'nama' => 'Hanifah',
-            'alamat' => 'Kalipucang',
-            'nomor_tlp' => '082288866677',
-        ]);
-        \App\Models\Pelanggan::create([
-            'nama' => 'Fahri',
-            'alamat' => 'Paledah',
-            'nomor_tlp' => '082288866679',
-        ]);
-        \App\Models\Pelanggan::create([
-            'nama' => 'Defan',
-            'alamat' => 'Banjarsari',
-            'nomor_tlp' => '082288866672',
-        ]);
-        \App\Models\Pelanggan::create([
-            'nama' => 'Megi',
-            'alamat' => 'Kalipucang',
-            'nomor_tlp' => '082288866671',
-        ]);
+        // Create 8 Kategori (5 original + 3 baru)
+        $kategoris = [
+            'Makanan',
+            'Minuman',
+            'Kemasan',
+            'Kebutuhan Pokok',
+            'Ice Cream',
+            'Laptop',
+            'Handphone',
+            'Mainan'
+        ];
 
-        \App\Models\Kategori::create([
-            'nama_kategori' => 'Makanan',
-        ]);
+        foreach ($kategoris as $kategori) {
+            \App\Models\Kategori::create([
+                'nama_kategori' => $kategori,
+            ]);
+        }
 
-        \App\Models\Kategori::create([
-            'nama_kategori' => 'Minuman',
-        ]);
-        \App\Models\Kategori::create([
-            'nama_kategori' => 'Kemasan',
-        ]);
-        \App\Models\Kategori::create([
-            'nama_kategori' => 'Kebutuhan Pokok',
-        ]);
-        \App\Models\Kategori::create([
-            'nama_kategori' => 'Ice Cream',
-        ]);
+        // Create 10 products per category (8 categories * 10 products = 80 products)
+        $produkData = [
+            // Makanan
+            1 => ['Chiki Taro', 'Indomie', 'Biskuit Oreo', 'Keripik Kentang', 'Cokelat Silverqueen', 'Permen Yupi', 'Wafer Tango', 'Sereal Energen', 'Roti Tawar', 'Mie Sedaap'],
+            // Minuman
+            2 => ['Le Mineral', 'Aqua', 'Coca Cola', 'Fanta', 'Sprite', 'Teh Botol Sosro', 'Kopi Kapal Api', 'Susu Ultra', 'Yakult', 'Pocari Sweat'],
+            // Kemasan
+            3 => ['Box Kertas', 'Plastik Kiloan', 'Kantong Kresek', 'Styrofoam', 'Bubble Wrap', 'Lakban', 'Kardus Besar', 'Paper Bag', 'Aluminium Foil', 'Plastic Wrap'],
+            // Kebutuhan Pokok
+            4 => ['Telur', 'Beras', 'Gula Pasir', 'Minyak Goreng', 'Garam', 'Tepung Terigu', 'Kecap Manis', 'Saos Tomat', 'Mentega', 'Susu Kental Manis'],
+            // Ice Cream
+            5 => ['Magnum', 'Walls Cornetto', 'Es Krim Aice', 'Paddle Pop', 'Vienetta', 'Ben & Jerry', 'Haagen Dazs', 'Baskin Robbins', 'Es Mambo', 'Es Lilin'],
+            // Laptop
+            6 => ['Asus VivoBook', 'Lenovo ThinkPad', 'HP Pavilion', 'Dell Inspiron', 'Acer Aspire', 'MacBook Air', 'MSI Gaming', 'Toshiba Satellite', 'Samsung Galaxy Book', 'Surface Laptop'],
+            // Handphone
+            7 => ['iPhone 15', 'Samsung Galaxy S24', 'Xiaomi Redmi Note', 'Oppo Reno', 'Vivo V30', 'Realme GT', 'Huawei P60', 'OnePlus 12', 'Google Pixel 8', 'Nothing Phone'],
+            // Mainan
+            8 => ['Lego Classic', 'Barbie Doll', 'Hot Wheels', 'Puzzle 1000 pcs', 'Rubik Cube', 'Monopoly', 'UNO Cards', 'Beyblade', 'Pokemon Cards', 'Action Figure']
+        ];
 
-        \App\Models\Produk::create([
-            'kategori_id' => 1,
-            'kode_produk' => '1001',
-            'nama_produk' => 'Chiki Taro',
-            'harga' => 5000
-        ]);
+        $productId = 1;
+        foreach ($produkData as $kategoriId => $products) {
+            foreach ($products as $index => $productName) {
+                $hargaModal = $faker->numberBetween(10000, 500000);
+                $hargaJual = $hargaModal + ($hargaModal * 0.3); // Markup 30%
 
-        \App\Models\Produk::create([
-            'kategori_id' => 2,
-    'kode_produk' => '1002',
-    'nama_produk' => 'Le Mineral',
-    'harga_jual' => 3500
-        ]);
-        \App\Models\Produk::create([
-            'kategori_id' => 3,
-    'kode_produk' => '1003',
-    'nama_produk' => 'Box Kertas',
-    'harga_jual' => 3500
-        ]);
-        \App\Models\Produk::create([
-            'kategori_id' => 4,
-    'kode_produk' => '1004',
-    'nama_produk' => 'Telur',
-    'harga_jual' => 15000
-        ]);
-        \App\Models\Produk::create([
-            'kategori_id' => 5,
-            'kode_produk' => '1005',
-            'nama_produk' => 'Magnum',
-            'harga' => 1500
-        ]);
+                \App\Models\Produk::create([
+                    'kategori_id' => $kategoriId,
+                    'kode_produk' => str_pad($productId, 4, '0', STR_PAD_LEFT),
+                    'nama_produk' => $productName,
+                    'harga_modal' => $hargaModal,
+                    'harga_jual' => $hargaJual,
+                    'stok' => $faker->numberBetween(100, 500)
+                ]);
 
-        \App\Models\Stok::create([
-            'produk_id' => 1,
-            'nama_suplier' => 'Toko Aji Usman',
-            'jumlah' => 250,
-            'tanggal' => date('Y-m-d', strtotime('-1 week'))
-        ]);
+                // Create stock entry for each product
+                \App\Models\Stok::create([
+                    'produk_id' => $productId,
+                    'nama_suplier' => $faker->company,
+                    'jumlah' => $faker->numberBetween(100, 500),
+                    'tanggal' => $faker->dateTimeBetween('-3 months', 'now')->format('Y-m-d')
+                ]);
 
-        \App\Models\Stok::create([
-            'produk_id' => 2,
-            'nama_suplier' => 'Agen Le Mineral',
-            'jumlah' => 100,
-            'tanggal' => date('Y-m-d', strtotime('-1 week'))
-        ]);
-        \App\Models\Stok::create([
-            'produk_id' => 3,
-            'nama_suplier' => 'Agen Telur',
-            'jumlah' => 100,
-            'tanggal' => date('Y-m-d', strtotime('-1 week'))
-        ]);
-        \App\Models\Stok::create([
-            'produk_id' => 4,
-            'nama_suplier' => 'Mang Supri',
-            'jumlah' => 100,
-            'tanggal' => date('Y-m-d', strtotime('-1 week'))
-        ]);
-        \App\Models\Stok::create([
-            'produk_id' => 5,
-            'nama_suplier' => 'Agen Ice Cream',
-            'jumlah' => 100,
-            'tanggal' => date('Y-m-d', strtotime('-1 week'))
-        ]);
+                $productId++;
+            }
+        }
 
-        \App\Models\Produk::where('id', 1)->update(
-            [
-                'stok' => 250,
-            ]
-        );
+        // Create 10 transactions with minimum 50k and 2 products
+        for ($i = 1; $i <= 10; $i++) {
+            $userId = $faker->numberBetween(1, 10);
+            $pelangganId = $faker->numberBetween(1, 10);
+            $tanggal = $faker->dateTimeBetween('-2 months', 'now');
 
-        \App\Models\Produk::where('id', 2)->update(
-            [
-                'stok' => 100,
-            ]
-        );
-        \App\Models\Produk::where('id', 3)->update(
-            [
-                'stok' => 100,
-            ]
-        );
-        \App\Models\Produk::where('id', 4)->update(
-            [
-                'stok' => 100,
-            ]
-        );
-        \App\Models\Produk::where('id', 5)->update(
-            [
-                'stok' => 100,
-            ]
-        );
+            // Generate unique transaction number
+            $nomorTransaksi = $tanggal->format('Ymd') . str_pad($i, 4, '0', STR_PAD_LEFT);
 
-        \App\Models\Penjualan::create([
-            'user_id' => 1,
-            'pelanggan_id' => 1,
-            'nomor_transaksi' => date('Ymd') . '0001',
-            'tanggal' => date('Y-m-d H:i:s'),
-            'subtotal' => 8500,
-            'pajak' => 850,
-            'total' => 9350,
-            'tunai' => 10000,
-            'kembalian' => 650
-        ]);
+            // Select random products and calculate subtotal
+            $selectedProducts = [];
+            $subtotal = 0;
+            $productCount = $faker->numberBetween(2, 5); // 2-5 products per transaction
 
-        \App\Models\Penjualan::create([
-            'user_id' => 2,
-            'pelanggan_id' => 2,
-            'nomor_transaksi' => date('Ymd') . '0002',
-            'tanggal' => date('Y-m-d H:i:s'),
-            'subtotal' => 13500,
-            'pajak' => 1350,
-            'total' => 14850,
-            'tunai' => 20000,
-            'kembalian' => 5150
-        ]);
+            for ($j = 0; $j < $productCount; $j++) {
+                $productId = $faker->numberBetween(1, 80);
+                $product = \App\Models\Produk::find($productId);
+                $jumlah = $faker->numberBetween(1, 3);
 
-        \App\Models\DetilPenjualan::create([
-            'penjualan_id' => 1,
-            'produk_id' => 1,
-            'jumlah' => 1,
-            'harga_produk' => 5000,
-            'subtotal' => 5000,
-        ]);
+                $selectedProducts[] = [
+                    'produk_id' => $productId,
+                    'jumlah' => $jumlah,
+                    'harga_jual' => $product->harga_jual,
+                    'subtotal' => $product->harga_jual * $jumlah
+                ];
 
-        \App\Models\DetilPenjualan::create([
-            'penjualan_id' => 1,
-            'produk_id' => 2,
-            'jumlah' => 1,
-            'harga_produk' => 3500,
-            'subtotal' => 3500,
-        ]);
+                $subtotal += $product->harga_jual * $jumlah;
+            }
 
-        \App\Models\DetilPenjualan::create([
-            'penjualan_id' => 2,
-            'produk_id' => 1,
-            'jumlah' => 1,
-            'harga_produk' => 5000,
-            'subtotal' => 10000,
-        ]);
+            // Ensure minimum 50k
+            if ($subtotal < 50000) {
+                $additionalProduct = \App\Models\Produk::where('harga_jual', '>=', 50000 - $subtotal)->first();
+                if ($additionalProduct) {
+                    $selectedProducts[] = [
+                        'produk_id' => $additionalProduct->id,
+                        'jumlah' => 1,
+                        'harga_jual' => $additionalProduct->harga_jual,
+                        'subtotal' => $additionalProduct->harga_jual
+                    ];
+                    $subtotal += $additionalProduct->harga_jual;
+                }
+            }
 
-        \App\Models\DetilPenjualan::create([
-            'penjualan_id' => 2,
-            'produk_id' => 2,
-            'jumlah' => 1,
-            'harga_produk' => 3500,
-            'subtotal' => 3500,
-        ]);
+            $pajak = $subtotal * 0.1; // 10% tax
+            $total = $subtotal + $pajak;
+            $tunai = $total + $faker->numberBetween(0, 20000); // Add some change
+            $kembalian = $tunai - $total;
+
+            // Create transaction
+            $penjualan = \App\Models\Penjualan::create([
+                'user_id' => $userId,
+                'pelanggan_id' => $pelangganId,
+                'nomor_transaksi' => $nomorTransaksi,
+                'tanggal' => $tanggal->format('Y-m-d H:i:s'),
+                'subtotal' => $subtotal,
+                'pajak' => $pajak,
+                'total' => $total,
+                'tunai' => $tunai,
+                'kembalian' => $kembalian,
+                'status' => 'selesai'
+            ]);
+
+            // Create transaction details
+            foreach ($selectedProducts as $item) {
+                \App\Models\DetilPenjualan::create([
+                    'penjualan_id' => $penjualan->id,
+                    'produk_id' => $item['produk_id'],
+                    'jumlah' => $item['jumlah'],
+                    'harga_jual' => $item['harga_jual'],
+                    'subtotal' => $item['subtotal'],
+                ]);
+            }
+        }
+
+        // Create some discounts
+        for ($i = 1; $i <= 5; $i++) {
+            \App\Models\Diskon::create([
+                'kode_diskon' => 'DISC' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'jenis_diskon' => $faker->randomElement(['persen', 'nominal']),
+                'jumlah_diskon' => $faker->numberBetween(5, 50),
+                'minimal_pembelian' => $faker->numberBetween(50000, 200000),
+                'tanggal_mulai' => $faker->dateTimeBetween('-1 month', 'now'),
+                'tanggal_selesai' => $faker->dateTimeBetween('now', '+1 month'),
+                'status' => true
+            ]);
+        }
     }
 }

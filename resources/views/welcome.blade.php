@@ -302,7 +302,7 @@
                         <div class="chart-icon">
                             <i class="fas fa-coins"></i>
                         </div>
-                        <h3 class="chart-title">Pengeluaran Stok per Bulan</h3>
+                        <h3 class="chart-title">Pembelian Stok per Bulan</h3>
                     </div>
                     <div style="position: relative; height: 400px;">
                         <canvas id="pengeluaranChart"></canvas>
@@ -323,15 +323,20 @@
                 </div>
             </div>
         </div>
-        <div class="chart-card animate-fade-in mt-4">
-            <div class="chart-header">
-                <div class="chart-icon">
-                    <i class="fas fa-chart-bar"></i>
+    </div>
+    
+    <!-- Chart Keuntungan/Kerugian per Bulan -->
+    <div class="col-xl-12 col-md-12 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="card-title text-primary fw-bold mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Keuntungan/Kerugian per Bulan
+                    </h6>
                 </div>
-                <h3 class="chart-title">Keuntungan/Kerugian per Bulan</h3>
-            </div>
-            <div style="position: relative; height: 400px;">
-                <canvas id="keuntunganChart"></canvas>
+                <div style="position: relative; height: 400px;">
+                    <canvas id="keuntunganKerugianChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -343,8 +348,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         var ctx = document.getElementById('myChart').getContext('2d');
         var produkTerjualCtx = document.getElementById('produkTerjualChart').getContext('2d');
-        var keuntunganCtx = document.getElementById('keuntunganChart').getContext('2d');
         var pengeluaranCtx = document.getElementById('pengeluaranChart').getContext('2d');
+        var keuntunganKerugianCtx = document.getElementById('keuntunganKerugianChart').getContext('2d');
 
         var myChart = new Chart(ctx, {
             type: 'line',
@@ -468,85 +473,6 @@
             }
         });
 
-        var keuntunganChart = new Chart(keuntunganCtx, {
-            type: 'line',
-            data: {
-                labels: {!! $keuntungan_stok['labels'] !!},
-                datasets: [{
-                    label: "{{ $keuntungan_stok['label'] }}",
-                    data: {!! $keuntungan_stok['data'] !!},
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: '#3b82f6',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#ef4444',
-                    pointBorderColor: '#ef4444',
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    fill: false,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        align: 'end',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: {
-                                size: 13,
-                                weight: '500'
-                            },
-                            color: '#374151'
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f1f5f9',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            },
-                            color: '#6b7280',
-                            padding: 10,
-                            callback: function(value) {
-                                return 'Rp ' + value.toLocaleString('id-ID');
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            },
-                            color: '#6b7280',
-                            padding: 10
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
-                animation: {
-                    duration: 1500,
-                    easing: 'easeInOutCubic'
-                }
-            }
-        });
-
         var pengeluaranChart = new Chart(pengeluaranCtx, {
             type: 'bar',
             data: {
@@ -623,6 +549,92 @@
                 }
             }
         });
+
+        // Chart Keuntungan/Kerugian dengan style seperti candlestick
+        var keuntunganKerugianChart = new Chart(keuntunganKerugianCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! $keuntungan_kerugian['labels'] !!},
+                datasets: [{
+                    label: "{{ $keuntungan_kerugian['label'] }}",
+                    data: {!! $keuntungan_kerugian['data'] !!},
+                    backgroundColor: {!! $keuntungan_kerugian['colors'] !!},
+                    borderColor: {!! $keuntungan_kerugian['colors'] !!},
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            color: '#374151'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var value = context.parsed.y;
+                                var status = value >= 0 ? 'Keuntungan' : 'Kerugian';
+                                return status + ': Rp ' + Math.abs(value).toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10,
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6b7280',
+                            padding: 10
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutCubic'
+                }
+            }
+        });
+
     });
 </script>
 @endpush
