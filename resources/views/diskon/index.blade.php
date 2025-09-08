@@ -107,6 +107,21 @@
                             </div>
                             
                             <div class="mt-2">
+                                <small class="text-muted">Pemakaian:</small>
+                                <div class="font-weight-bold">
+                                    {{ $diskon->jumlah_terpakai ?? 0 }}
+                                    @if($diskon->maksimal_pemakaian)
+                                        / {{ $diskon->maksimal_pemakaian }} kali
+                                        @if($diskon->jumlah_terpakai >= $diskon->maksimal_pemakaian)
+                                            <span class="badge badge-warning ml-1">Limit Tercapai</span>
+                                        @endif
+                                    @else
+                                        kali (Tanpa Batas)
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
                                 <small class="text-muted">Periode:</small>
                                 <div class="font-weight-bold">
                                     {{ $diskon->tanggal_mulai->format('d/m/Y') }} - 
@@ -129,6 +144,7 @@
                                 <th>Jenis & Nilai</th>
                                 <th>Berlaku Untuk</th>
                                 <th>Min. Pembelian</th>
+                                <th>Pemakaian</th>
                                 <th>Periode</th>
                                 <th>Status</th>
                                 <th></th>
@@ -156,6 +172,17 @@
                                         @endif
                                     </td>
                                     <td>Rp {{ number_format($diskon->minimal_pembelian) }}</td>
+                                    <td>
+                                        {{ $diskon->jumlah_terpakai ?? 0 }}
+                                        @if($diskon->maksimal_pemakaian)
+                                            / {{ $diskon->maksimal_pemakaian }}
+                                            @if($diskon->jumlah_terpakai >= $diskon->maksimal_pemakaian)
+                                                <br><span class="badge badge-warning">Limit Tercapai</span>
+                                            @endif
+                                        @else
+                                            <small class="text-muted">(Tanpa Batas)</small>
+                                        @endif
+                                    </td>
                                     <td>
                                         {{ $diskon->tanggal_mulai->format('d/m/Y') }} - 
                                         {{ $diskon->tanggal_selesai->format('d/m/Y') }}

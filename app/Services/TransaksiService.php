@@ -136,6 +136,11 @@ class TransaksiService
             $this->produkRepository->updateStock($item->id, -$item->quantity);
         }
 
+        // Increment usage count for discount if used
+        if ($diskon) {
+            $diskon->incrementUsage();
+        }
+
         $cart->destroy();
 
         return $penjualan;

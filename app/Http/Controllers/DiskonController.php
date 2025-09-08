@@ -40,6 +40,7 @@ class DiskonController extends Controller
             'tanggal_selesai' => 'required|date|after:tanggal_mulai',
             'kategori_id' => 'nullable|exists:kategoris,id',
             'produk_id' => 'nullable|exists:produks,id',
+            'maksimal_pemakaian' => 'nullable|integer|min:1',
         ]);
 
         $this->diskonService->createDiskon($request->all());
@@ -64,12 +65,15 @@ class DiskonController extends Controller
             'minimal_pembelian' => 'nullable|integer|min:0',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after:tanggal_mulai',
-            'status' => 'boolean',
             'kategori_id' => 'nullable|exists:kategoris,id',
             'produk_id' => 'nullable|exists:produks,id',
+            'maksimal_pemakaian' => 'nullable|integer|min:1',
         ]);
 
-        $this->diskonService->updateDiskon($diskon, $request->all());
+        // Hapus status dari request agar tidak bisa diedit
+        $data = $request->except(['status']);
+        
+        $this->diskonService->updateDiskon($diskon, $data);
 
         return redirect()->route('diskon.index')->with('update', 'success');
     }

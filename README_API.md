@@ -6,6 +6,47 @@
 http://localhost:8000/api/pos
 ```
 
+## Authentication
+
+### **POST /login-kasir**
+
+**Description**: Login untuk kasir/petugas.
+
+**Request Body**:
+
+```json
+{
+    "username": "petugas1",
+    "password": "password123"
+}
+```
+
+**Response Success**:
+
+```json
+{
+    "success": true,
+    "message": "Login berhasil",
+    "data": {
+        "kasir_id": 2,
+        "nama": "Petugas 1",
+        "username": "petugas1",
+        "role": "petugas"
+    }
+}
+```
+
+**Response Error**:
+
+```json
+{
+    "success": false,
+    "message": "Username tidak ditemukan"
+}
+```
+
+---
+
 ## Endpoints
 
 ### 1. **GET /produk**
@@ -110,12 +151,13 @@ http://localhost:8000/api/pos
 
 ### 5. **POST /transaksi**
 
-**Description**: Membuat transaksi baru dengan sistem cart yang sama seperti kasir utama.
+**Description**: Membuat transaksi baru dengan sistem cart yang sama seperti kasir utama. **Wajib menyertakan kasir_id dari hasil login kasir**.
 
 **Request Body**:
 
 ```json
 {
+    "kasir_id": 2,
     "items": [
         {
             "produk_id": 1,
@@ -613,6 +655,36 @@ Body:
 
 ---
 
+## Alur Penggunaan API
+
+### **Step 1: Login Kasir**
+```bash
+POST /api/pos/login-kasir
+{
+    "username": "petugas1",
+    "password": "password123"
+}
+```
+
+### **Step 2: Buat Transaksi**
+```bash
+POST /api/pos/transaksi
+{
+    "kasir_id": 2,  // dari hasil login
+    "items": [
+        {
+            "produk_id": 1,
+            "quantity": 2
+        }
+    ],
+    "pelanggan_id": 1,  // opsional
+    "metode_pembayaran": "tunai",
+    "jumlah_bayar": 50000
+}
+```
+
+---
+
 ## Expected Results
 
 ### **✅ Yang Akan Terjadi Setelah Transaksi Berhasil:**
@@ -621,9 +693,12 @@ Body:
 2. **Stock Update**: Stok produk otomatis berkurang sesuai quantity
 3. **Response Complete**: Mendapat nomor transaksi, total, pajak, dan kembalian
 4. **Business Logic**: Pajak 10% dan diskon dihitung sesuai sistem kasir utama
+5. **Kasir Recorded**: Nama kasir tercatat di transaksi
 
 ### **⚠️ Error yang Mungkin Terjadi:**
 
+-   **Kasir tidak valid**: "ID Kasir wajib diisi" atau "Kasir tidak ditemukan"
+-   **Role tidak sesuai**: "User tidak memiliki hak akses sebagai kasir"
 -   **Stok tidak mencukupi**: "Stok produk tidak mencukupi"
 -   **Cash kurang**: "Cash tidak mencukupi"
 -   **Produk tidak ditemukan**: "Produk dengan ID {id} tidak ditemukan"

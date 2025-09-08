@@ -149,4 +149,68 @@ class DashboardRepository
         }
         return $output;
     }
+
+    // Target harian berdasarkan pengeluaran stok dibagi jumlah hari dalam bulan
+    public function getTargetHarian()
+    {
+        $bulanIni = date('m');
+        $tahunIni = date('Y');
+        $jumlahHariDalamBulan = date('t'); // Total hari dalam bulan ini
+        
+        // Ambil pengeluaran stok bulan ini
+        $pengeluaranBulanIni = DB::table('stoks')
+            ->join('produks', 'stoks.produk_id', '=', 'produks.id')
+            ->select(DB::raw('SUM(stoks.jumlah * produks.harga_modal) as total_pengeluaran'))
+            ->whereMonth('stoks.tanggal', $bulanIni)
+            ->whereYear('stoks.tanggal', $tahunIni)
+            ->first();
+        
+        $targetHarian = $pengeluaranBulanIni->total_pengeluaran / $jumlahHariDalamBulan;
+        
+        // Ambil total transaksi hari ini
+        $transaksiHariIni = Penjualan::select(DB::raw('SUM(total) as total_hari_ini'))
+            ->where('status', '!=', 'batal')
+            ->whereDate('tanggal', date('Y-m-d'))
+            ->first();
+        
+        $totalHariIni = $transaksiHariIni->total_hari_ini ?? 0;
+        
+        return [
+            'target' => round($targetHarian),
+            'current' => $totalHariIni,
+            'percentage' => $targetHarian > 0 ? min(100, round(($totalHariIni / $targetHarian) * 100)) : 0
+        ];
+    }
+
+    // Target bulanan berdasarkan pengeluaran stok
+    public function getTargetBulanan()
+    {
+        $bulanIni = date('m');
+        $tahunIni = date('Y');
+        
+        // Ambil pengeluaran stok bulan ini
+        $pengeluaranBulanIni = DB::table('stoks')
+            ->join('produks', 'stoks.produk_id', '=', 'produks.id')
+            ->select(DB::raw('SUM(stoks.jumlah * produks.harga_modal) as total_pengeluaran'))
+            ->whereMonth('stoks.tanggal', $bulanIni)
+            ->whereYear('stoks.tanggal', $tahunIni)
+            ->first();
+        
+        $targetBulanan = $pengeluaranBulanIni->total_pengeluaran ?? 0;
+        
+        // Ambil total transaksi bulan ini
+        $transaksiBulanIni = Penjualan::select(DB::raw('SUM(total) as total_bulan_ini'))
+            ->where('status', '!=', 'batal')
+            ->whereMonth('tanggal', $bulanIni)
+            ->whereYear('tanggal', $tahunIni)
+            ->first();
+        
+        $totalBulanIni = $transaksiBulanIni->total_bulan_ini ?? 0;
+        
+        return [
+            'target' => $targetBulanan,
+            'current' => $totalBulanIni,
+            'percentage' => $targetBulanan > 0 ? min(100, round(($totalBulanIni / $targetBulanan) * 100)) : 0
+        ];
+    }
 }

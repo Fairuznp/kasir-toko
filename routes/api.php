@@ -21,20 +21,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // POS API Routes
 Route::prefix('pos')->group(function () {
+    // Authentication
+    Route::post('login-kasir', [PosApiController::class, 'loginKasir']);
+
     // Master Data
-    Route::get('/produk', [PosApiController::class, 'getProduk']);
-    Route::get('/produk/{id}', [PosApiController::class, 'getDetailProduk']);
-    Route::get('/produk/kategori/{kategoriId}', [PosApiController::class, 'getProdukByKategori']);
-    Route::get('/search-produk', [PosApiController::class, 'searchProduk']);
-    Route::get('/kategori', [PosApiController::class, 'getKategori']);
-    Route::get('/pelanggan', [PosApiController::class, 'getPelanggan']);
-    Route::get('/diskon', [PosApiController::class, 'getDiskon']);
-    Route::get('/metode-pembayaran', [PosApiController::class, 'getMetodePembayaran']);
+    Route::get('produk', [PosApiController::class, 'getProduk']);
+    Route::get('produk/{id}', [PosApiController::class, 'getDetailProduk']);
+    Route::get('produk/kategori/{kategoriId}', [PosApiController::class, 'getProdukByKategori']);
+    Route::get('search-produk', [PosApiController::class, 'searchProduk']);
+    Route::get('kategori', [PosApiController::class, 'getKategori']);
+    Route::get('pelanggan', [PosApiController::class, 'getPelanggan']);
+    Route::get('diskon', [PosApiController::class, 'getDiskon']);
+    Route::get('metode-pembayaran', [PosApiController::class, 'getMetodePembayaran']);
 
     // Cart & Transaksi
-    Route::post('/calculate-cart', [PosApiController::class, 'calculateCart']);
-    Route::post('/validate-transaksi', [PosApiController::class, 'validateTransaksi']);
-    Route::post('/transaksi', [PosApiController::class, 'createTransaksi']);
-    Route::post('/cek-stok', [PosApiController::class, 'cekStok']);
-    Route::post('/apply-diskon', [PosApiController::class, 'applyDiskon']);
+    Route::post('calculate-cart', [PosApiController::class, 'calculateCart']);
+    Route::post('validate-transaksi', [PosApiController::class, 'validateTransaksi']);
+    Route::post('transaksi', [PosApiController::class, 'createTransaksi']);
+    Route::post('cek-stok', [PosApiController::class, 'cekStok']);
+    Route::post('apply-diskon', [PosApiController::class, 'applyDiskon']);
 });

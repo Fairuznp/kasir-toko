@@ -81,6 +81,10 @@ class DashboardService
             $colorKeuntunganKerugian[] = $row->status === 'keuntungan' ? '#10b981' : '#ef4444';
         }
 
+        // Ambil data target harian dan bulanan
+        $targetHarian = $this->dashboardRepository->getTargetHarian();
+        $targetBulanan = $this->dashboardRepository->getTargetBulanan();
+
         return [
             'user' => $user,
             'pelanggan' => $pelanggan,
@@ -107,7 +111,9 @@ class DashboardService
                 'labels' => json_encode($labelsKeuntunganKerugian),
                 'data' => json_encode($dataKeuntunganKerugian),
                 'colors' => json_encode($colorKeuntunganKerugian)
-            ]
+            ],
+            'target_harian' => $targetHarian,
+            'target_bulanan' => $targetBulanan
         ];
     }
 }

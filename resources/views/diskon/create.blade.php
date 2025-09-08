@@ -109,6 +109,30 @@
                         </div>
                     </div>
 
+                    {{-- Baris 2.5: Maksimal Pemakaian --}}
+                    <div class="row mb-3 mb-md-4">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-semibold text-dark">
+                                    <i class="fas fa-limit text-warning mr-1"></i>Maksimal Pemakaian
+                                </label>
+                                <input type="number" name="maksimal_pemakaian"
+                                       class="form-control border-0 shadow-sm @error('maksimal_pemakaian') is-invalid @enderror"
+                                       value="{{ old('maksimal_pemakaian') }}" 
+                                       placeholder="Kosongkan untuk tidak ada batas"
+                                       style="background-color: #f8f9fa;">
+                                @error('maksimal_pemakaian')
+                                    <div class="invalid-feedback">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle mr-1"></i>Kosongkan jika diskon dapat digunakan tanpa batas
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Baris 3: Tanggal Mulai & Selesai --}}
                     <div class="row mb-3 mb-md-4">
                         <div class="col-12 col-md-6 mb-3 mb-md-0">

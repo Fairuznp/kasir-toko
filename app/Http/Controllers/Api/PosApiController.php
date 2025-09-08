@@ -7,9 +7,11 @@ use App\Models\Produk;
 use App\Models\Kategori;
 use App\Models\Pelanggan;
 use App\Models\Diskon;
+use App\Models\User;
 use App\Services\TransaksiService;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Jackiedo\Cart\Facades\Cart;
 
 class PosApiController extends Controller
@@ -99,12 +101,79 @@ class PosApiController extends Controller
         }
     }
 
+    public function loginKasir(Request $request)
+    {
+        try {
+            $request->validate([
+                'username' => 'required|string',
+                'password' => 'required|string'
+            ]);
+
+            // Cari user berdasarkan username
+            $user = User::where('username', $request->username)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Username tidak ditemukan'
+                ], 401);
+            }
+
+            // Verifikasi password
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password salah'
+                ], 401);
+            }
+
+            // Validasi role kasir
+            if ($user->role !== 'petugas' && $user->role !== 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User tidak memiliki hak akses sebagai kasir'
+                ], 403);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login berhasil',
+                'data' => [
+                    'kasir_id' => $user->id,
+                    'nama' => $user->nama,
+                    'username' => $user->username,
+                    'role' => $user->role
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Login gagal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function createTransaksi(Request $request)
     {
         try {
-            // Simulasi data user (karena API tidak menggunakan auth)
-            $user = (object) ['id' => 1, 'nama' => 'API User'];
-            $userId = 'api_user_' . time(); // Unique cart identifier
+            // Validasi dan ambil data kasir dari request
+            $kasirId = $request->input('kasir_id');
+            if (!$kasirId) {
+                throw new \Exception('ID Kasir wajib diisi');
+            }
+
+            // Cari user/kasir berdasarkan ID
+            $user = User::find($kasirId);
+            if (!$user) {
+                throw new \Exception('Kasir tidak ditemukan');
+            }
+
+            // Validasi role kasir (opsional, sesuaikan dengan sistem role Anda)
+            if ($user->role !== 'petugas' && $user->role !== 'admin') {
+                throw new \Exception('User tidak memiliki hak akses sebagai kasir');
+            }
+
+            $userId = 'api_user_' . $kasirId . '_' . time(); // Unique cart identifier
 
             // Buat cart dari request
             $cartData = $request->input('items', []);

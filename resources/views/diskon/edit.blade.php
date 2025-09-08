@@ -64,6 +64,35 @@
             <div class="row">
                 <div class="col-12 col-md-6 mb-3 mb-md-0">
                     <div class="form-group">
+                        <label>Maksimal Pemakaian</label>
+                        <input type="number" name="maksimal_pemakaian" 
+                               class="form-control @error('maksimal_pemakaian') is-invalid @enderror"
+                               value="{{ old('maksimal_pemakaian', $diskon->maksimal_pemakaian) }}"
+                               placeholder="Kosongkan untuk tidak ada batas">
+                        @error('maksimal_pemakaian')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="form-text text-muted">
+                            Jumlah terpakai saat ini: {{ $diskon->jumlah_terpakai ?? 0 }} kali
+                        </small>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        <label>Status Diskon</label>
+                        <input type="text" class="form-control" 
+                               value="{{ $diskon->status ? 'Aktif' : 'Tidak Aktif' }}" 
+                               readonly style="background-color: #f8f9fa;">
+                        <small class="form-text text-muted">
+                            Status tidak dapat diubah setelah diskon dibuat
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-md-6 mb-3 mb-md-0">
+                    <div class="form-group">
                         <label>Tanggal Mulai</label>
                         <input type="datetime-local" name="tanggal_mulai" 
                                class="form-control @error('tanggal_mulai') is-invalid @enderror"
@@ -87,15 +116,6 @@
             </div>
 
             <div class="row">
-                <div class="col-12 col-md-4 mb-3 mb-md-0">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select name="status" class="form-control">
-                            <option value="1" {{ old('status', $diskon->status) ? 'selected' : '' }}>Aktif</option>
-                            <option value="0" {{ !old('status', $diskon->status) ? 'selected' : '' }}>Tidak Aktif</option>
-                        </select>
-                    </div>
-                </div>
                 <div class="col-12 col-md-4 mb-3 mb-md-0">
                     <div class="form-group">
                         <label>Berlaku Untuk</label>

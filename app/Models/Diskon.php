@@ -21,6 +21,8 @@ class Diskon extends Model
         'status',
         'kategori_id',
         'produk_id',
+        'maksimal_pemakaian',
+        'jumlah_terpakai',
     ];
 
     protected $casts = [
@@ -44,6 +46,11 @@ class Diskon extends Model
         // Cek status aktif
         if (!$this->status) {
             return ['valid' => false, 'message' => 'Kode diskon tidak aktif'];
+        }
+
+        // Cek maksimal pemakaian
+        if ($this->maksimal_pemakaian !== null && $this->jumlah_terpakai >= $this->maksimal_pemakaian) {
+            return ['valid' => false, 'message' => 'Kode diskon sudah mencapai batas maksimal pemakaian'];
         }
 
         // Cek tanggal
@@ -241,5 +248,34 @@ class Diskon extends Model
         }
 
         return $result;
+    }
+
+    /**
+     * Menambah jumlah pemakaian diskon
+     */
+    public function incrementUsage()
+    {
+        $this->increment('jumlah_terpakai');
+    }
+
+    /**
+     * Cek apakah diskon masih bisa digunakan
+     */
+    public function canBeUsed()
+    {
+        if (!$this->status) {
+            return false;
+        }
+
+        if ($this->maksimal_pemakaian !== null && $this->jumlah_terpakai >= $this->maksimal_pemakaian) {
+            return false;
+        }
+
+        $now = now();
+        if ($now < $this->tanggal_mulai || $now > $this->tanggal_selesai) {
+            return false;
+        }
+
+        return true;
     }
 }
