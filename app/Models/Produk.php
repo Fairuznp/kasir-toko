@@ -22,6 +22,11 @@ class Produk extends Model
         'stok',
     ];
 
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori::class);
+    }
+
     public function expired_products()
     {
         return $this->hasMany(ProdukExpired::class);

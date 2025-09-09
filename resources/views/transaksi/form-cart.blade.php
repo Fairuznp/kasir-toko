@@ -266,10 +266,10 @@
         } = item;
 
         let btn = `<div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-success" onclick="openQtyModal('${hash}', ${quantity}, 'add')" title="Tambah">
+                        <button type="button" class="btn btn-success" onclick="openQtyModal('${hash}', ${quantity}, 'add', ${item.stok || 0})" title="Tambah">
                             <i class="fas fa-plus"></i>
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="openQtyModal('${hash}', ${quantity}, 'subtract')" title="Kurang">
+                        <button type="button" class="btn btn-primary" onclick="openQtyModal('${hash}', ${quantity}, 'subtract', ${item.stok || 0})" title="Kurang">
                             <i class="fas fa-minus"></i>
                         </button>
                         <button type="button" class="btn btn-danger" onclick="eDel('${hash}')" title="Hapus">
@@ -327,11 +327,13 @@
     // Global variables for modal
     let currentHash = null;
     let currentQty = 0;
+    let currentStok = 0;
     let actionType = null;
     
-    function openQtyModal(hash, currentQuantity, action) {
+    function openQtyModal(hash, currentQuantity, action, stok = 0) {
         currentHash = hash;
         currentQty = currentQuantity;
+        currentStok = stok;
         actionType = action;
         
         // Set modal title and info based on action
@@ -340,6 +342,9 @@
             $('#qtySubmitText').text('Tambah');
             $('#qtySubmitBtn').removeClass('btn-primary').addClass('btn-success');
             $('#qtySubmitBtn i').removeClass('fa-check').addClass('fa-plus');
+            // Set max quantity untuk penambahan
+            const maxAdd = Math.max(0, stok - currentQuantity);
+            $('#qtyInput').attr('max', maxAdd);
         } else {
             $('#qtyModalTitle').text('Kurangi Quantity');
             $('#qtySubmitText').text('Kurangi');
@@ -365,11 +370,22 @@
         
         if (actionType === 'add') {
             const newQty = currentQty + inputQty;
+            const maxAdd = Math.max(0, currentStok - currentQty);
+            isValid = inputQty <= maxAdd && inputQty > 0;
+            
             infoText = `<div class="row">
                             <div class="col-12">
                                 <div class="d-flex justify-content-between">
                                     <span>Quantity saat ini:</span>
                                     <strong>${currentQty}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span>Stok tersedia:</span>
+                                    <strong class="text-info">${currentStok}</strong>
                                 </div>
                             </div>
                         </div>
@@ -386,13 +402,24 @@
                             <div class="col-12">
                                 <div class="d-flex justify-content-between">
                                     <span><strong>Total quantity:</strong></span>
-                                    <strong class="text-success">${newQty}</strong>
+                                    <strong class="${isValid ? 'text-success' : 'text-danger'}">${newQty}</strong>
                                 </div>
                             </div>
                         </div>`;
+            
+            if (!isValid) {
+                infoText += `<div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="alert alert-danger py-2 mb-0">
+                                        <small><i class="fas fa-exclamation-triangle"></i> 
+                                        ${inputQty > maxAdd ? `Maksimal yang bisa ditambahkan: ${maxAdd}` : 'Quantity harus lebih dari 0'}</small>
+                                    </div>
+                                </div>
+                            </div>`;
+            }
         } else {
             const newQty = Math.max(0, currentQty - inputQty);
-            isValid = inputQty <= currentQty;
+            isValid = inputQty <= currentQty && inputQty > 0;
             
             infoText = `<div class="row">
                             <div class="col-12">
@@ -424,7 +451,8 @@
                 infoText += `<div class="row mt-2">
                                 <div class="col-12">
                                     <div class="alert alert-danger py-2 mb-0">
-                                        <small><i class="fas fa-exclamation-triangle"></i> Tidak bisa kurangi lebih dari quantity saat ini!</small>
+                                        <small><i class="fas fa-exclamation-triangle"></i> 
+                                        ${inputQty > currentQty ? `Maksimal yang bisa dikurangi: ${currentQty}` : 'Quantity harus lebih dari 0'}</small>
                                     </div>
                                 </div>
                             </div>`;
@@ -434,7 +462,7 @@
         $('#currentQtyInfo').html(infoText);
         
         // Enable/disable submit button based on validation
-        $('#qtySubmitBtn').prop('disabled', !isValid || inputQty <= 0);
+        $('#qtySubmitBtn').prop('disabled', !isValid);
     }
     
     // Handle form submission
@@ -446,14 +474,19 @@
         
         if (actionType === 'add') {
             finalQty = inputQty; // Positive number for addition
+            // Double check validation
+            const maxAdd = Math.max(0, currentStok - currentQty);
+            if (inputQty > maxAdd) {
+                alert(`Maksimal yang bisa ditambahkan: ${maxAdd}`);
+                return;
+            }
         } else {
             finalQty = -inputQty; // Negative number for subtraction
-        }
-        
-        // Validate quantity for subtraction
-        if (actionType === 'subtract' && inputQty > currentQty) {
-            alert('Quantity yang dikurangi tidak boleh lebih dari quantity saat ini!');
-            return;
+            // Double check validation
+            if (inputQty > currentQty) {
+                alert(`Maksimal yang bisa dikurangi: ${currentQty}`);
+                return;
+            }
         }
         
         // Call the update function
@@ -473,6 +506,7 @@
         $('#qtyInput').removeAttr('max');
         currentHash = null;
         currentQty = 0;
+        currentStok = 0;
         actionType = null;
     });
     

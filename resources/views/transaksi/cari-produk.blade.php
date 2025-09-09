@@ -103,24 +103,41 @@
     }
 
     function addResultProduk(item) {
-        const { nama_produk, kode_produk } = item;
+        const { nama_produk, kode_produk, stok } = item;
+
+        // Disable button jika stok habis
+        const isOutOfStock = stok <= 0;
+        const btnClass = isOutOfStock ? 'btn-secondary' : 'btn-success';
+        const btnDisabled = isOutOfStock ? 'disabled' : '';
+        const btnText = isOutOfStock ? 'Habis' : 'Add';
+        const btnIcon = isOutOfStock ? 'fa-times' : 'fa-plus';
 
         const btn = `<button type="button"
-                        class="btn btn-xs btn-success btn-block"
+                        class="btn btn-xs ${btnClass} btn-block"
                         onclick="addItem('${kode_produk}')"
-                        title="Tambah ${nama_produk} ke keranjang">
-                        <i class="fas fa-plus mr-1 d-none d-sm-inline"></i>
-                        <span class="d-none d-sm-inline">Add</span>
-                        <i class="fas fa-plus d-sm-none"></i>
+                        title="${isOutOfStock ? 'Stok habis' : 'Tambah ' + nama_produk + ' ke keranjang'}"
+                        ${btnDisabled}>
+                        <i class="fas ${btnIcon} mr-1 d-none d-sm-inline"></i>
+                        <span class="d-none d-sm-inline">${btnText}</span>
+                        <i class="fas ${btnIcon} d-sm-none"></i>
                     </button>`;
 
-        const row = `<tr class="cursor-pointer" onclick="addItem('${kode_produk}')">
+        // Warna stok berdasarkan jumlah
+        let stokColor = 'text-success';
+        if (stok <= 0) stokColor = 'text-danger';
+        else if (stok <= 5) stokColor = 'text-warning';
+
+        const rowClick = isOutOfStock ? '' : `onclick="addItem('${kode_produk}')"`;
+        const cursorClass = isOutOfStock ? '' : 'cursor-pointer';
+
+        const row = `<tr class="${cursorClass}" ${rowClick}>
                         <td>
                             <div class="d-flex justify-content-between align-items-center">
-                                <div>
+                                <div class="flex-grow-1">
                                     <strong>${nama_produk}</strong>
-                                    <div class="d-none d-md-block">
+                                    <div class="d-flex justify-content-between">
                                         <small class="text-muted">Kode: ${kode_produk}</small>
+                                        <small class="${stokColor}">Stok: ${stok}</small>
                                     </div>
                                 </div>
                                 <div class="ml-2">
@@ -134,6 +151,13 @@
 
     function addItem(kode_produk) {
         if (!kode_produk) return;
+
+        // Cek apakah button disabled (stok habis)
+        const button = $(`button[onclick="addItem('${kode_produk}')"]`);
+        if (button.prop('disabled')) {
+            alert('Stok produk habis!');
+            return;
+        }
 
         selectedKodeProduk = kode_produk; // simpan ke global
         $('#qtyInput').val(1);
@@ -166,10 +190,28 @@
             }, 1000);
             
         }, "json").fail(function(error) {
+            let errorMessage = 'Terjadi kesalahan saat menambahkan produk';
+            
             if (error.status === 422) {
-                $('#msgErrorBarcode').addClass('d-block')
-                    .html(error.responseJSON.errors.kode_produk[0]);
+                // Validation error
+                if (error.responseJSON && error.responseJSON.errors && error.responseJSON.errors.kode_produk) {
+                    errorMessage = error.responseJSON.errors.kode_produk[0];
+                }
+                $('#msgErrorBarcode').addClass('d-block').html(errorMessage);
                 $('#barcode').addClass('is-invalid');
+            } else if (error.status === 404) {
+                // Not found error dari service
+                if (error.responseJSON && error.responseJSON.message) {
+                    errorMessage = error.responseJSON.message;
+                }
+            } else if (error.responseJSON && error.responseJSON.message) {
+                // Error lainnya dari service (seperti stok tidak mencukupi)
+                errorMessage = error.responseJSON.message;
+            }
+            
+            // Tampilkan alert untuk error stok
+            if (errorMessage.includes('Stok') || errorMessage.includes('stok')) {
+                alert(errorMessage);
             }
             
             // Show error feedback

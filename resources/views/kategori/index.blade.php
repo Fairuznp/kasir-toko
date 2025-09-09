@@ -18,7 +18,12 @@
     @endif
     @if (session('destroy') == 'success')
         <x-alert type="success">
-            <strong>Berhasil dihapus!</strong> Kategori berhasil dihapus.
+            <strong>Berhasil dihapus!</strong> Kategori berhasil dihapus dan semua produk dipindahkan ke kategori "Tidak Berkategori".
+        </x-alert>
+    @endif
+    @if (session('error'))
+        <x-alert type="danger">
+            <strong>Error!</strong> {{ session('error') }}
         </x-alert>
     @endif
 
@@ -56,7 +61,8 @@
                     <thead class="bg-light">
                         <tr>
                             <th width="10%">#</th>
-                            <th width="70%">Nama Kategori</th>
+                            <th width="50%">Nama Kategori</th>
+                            <th width="20%" class="text-center">Jumlah Produk</th>
                             <th width="20%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -68,7 +74,13 @@
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-tag text-primary mr-2"></i>
                                         {{ $kategori->nama_kategori }}
+                                        @if($kategori->nama_kategori === 'Tidak Berkategori')
+                                            <span class="badge badge-secondary ml-2">Default</span>
+                                        @endif
                                     </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-info">{{ $kategori->produks_count }}</span>
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
@@ -77,18 +89,29 @@
                                             title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button type="button" data-toggle="modal" data-target="#modalDelete"
-                                            data-url="{{ route('kategori.destroy', ['kategori' => $kategori->id]) }}"
-                                            class="btn btn-sm btn-outline-danger btn-delete"
-                                            title="Hapus">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        @if($kategori->nama_kategori !== 'Tidak Berkategori')
+                                            <button type="button" data-toggle="modal" data-target="#modalDelete"
+                                                data-url="{{ route('kategori.destroy', ['kategori' => $kategori->id]) }}"
+                                                data-produk-count="{{ $kategori->produks_count }}"
+                                                data-kategori-name="{{ $kategori->nama_kategori }}"
+                                                class="btn btn-sm btn-outline-danger btn-delete"
+                                                title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" 
+                                                class="btn btn-sm btn-outline-secondary" 
+                                                disabled
+                                                title="Kategori default tidak dapat dihapus">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="text-center py-5">
+                                <td colspan="4" class="text-center py-5">
                                     <div class="text-muted">
                                         <i class="fas fa-list fa-3x mb-3"></i>
                                         <h5>Belum Ada Kategori</h5>
@@ -213,4 +236,31 @@
 
 @push('modals')
     <x-modal-delete />
+@endpush
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('.btn-delete').on('click', function() {
+        const url = $(this).data('url');
+        const produkCount = $(this).data('produk-count');
+        const kategoriName = $(this).data('kategori-name');
+        
+        $('#formDelete').attr('action', url);
+        
+        // Update modal message based on product count
+        let message = `Yakin ingin menghapus kategori "${kategoriName}"?`;
+        
+        if (produkCount > 0) {
+            message += `<br><br><div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Perhatian:</strong> Terdapat <strong>${produkCount} produk</strong> dalam kategori ini.
+                Semua produk akan dipindahkan ke kategori <strong>"Tidak Berkategori"</strong>.
+            </div>`;
+        }
+        
+        $('#modalDelete .modal-body p').html(message);
+    });
+});
+</script>
 @endpush

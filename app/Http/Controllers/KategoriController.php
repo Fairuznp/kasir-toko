@@ -65,8 +65,11 @@ class KategoriController extends Controller
 
     public function destroy(Kategori $kategori)
     {
-        $this->kategoriService->deleteKategori($kategori);
-
-        return back()->with('destroy', 'success');
+        try {
+            $this->kategoriService->deleteKategori($kategori);
+            return back()->with('destroy', 'success');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

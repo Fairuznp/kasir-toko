@@ -8,7 +8,8 @@ class KategoriRepository
 {
     public function getAllKategori($search = null)
     {
-        return Kategori::orderBy('id')
+        return Kategori::withCount('produks')
+            ->orderBy('id')
             ->when($search, function ($q, $search) {
                 return $q->where('nama_kategori', 'like', "%{$search}%");
             })
@@ -27,7 +28,29 @@ class KategoriRepository
 
     public function deleteKategori($kategori)
     {
+        // Pastikan kategori default "Tidak Berkategori" tersedia
+        $defaultKategori = $this->getOrCreateDefaultKategori();
+        
+        // Update semua produk yang menggunakan kategori ini ke kategori default
+        \App\Models\Produk::where('kategori_id', $kategori->id)
+            ->update(['kategori_id' => $defaultKategori->id]);
+        
+        // Hapus kategori
         return $kategori->delete();
+    }
+
+    private function getOrCreateDefaultKategori()
+    {
+        // Cari kategori default, jika tidak ada maka buat
+        $defaultKategori = Kategori::where('nama_kategori', 'Tidak Berkategori')->first();
+        
+        if (!$defaultKategori) {
+            $defaultKategori = Kategori::create([
+                'nama_kategori' => 'Tidak Berkategori'
+            ]);
+        }
+        
+        return $defaultKategori;
     }
 
     public function getKategoriForSelect()

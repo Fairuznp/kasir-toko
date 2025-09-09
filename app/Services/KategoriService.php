@@ -36,6 +36,11 @@ class KategoriService
 
     public function deleteKategori($kategori)
     {
+        // Cek apakah ini kategori default yang tidak boleh dihapus
+        if ($kategori->nama_kategori === 'Tidak Berkategori') {
+            throw new \Exception('Kategori "Tidak Berkategori" tidak dapat dihapus karena digunakan sebagai kategori default.');
+        }
+        
         return $this->kategoriRepository->deleteKategori($kategori);
     }
 

@@ -67,10 +67,11 @@ class TransaksiRepository
 
     public function searchProduk($search = null)
     {
-        return Produk::select('id', 'kode_produk', 'nama_produk')
+        return Produk::select('id', 'kode_produk', 'nama_produk', 'stok')
             ->when($search, function ($q, $search) {
                 return $q->where('nama_produk', 'like', "%{$search}%");
             })
+            ->where('stok', '>', 0) // Hanya tampilkan produk yang ada stoknya
             ->orderBy('nama_produk')
             ->take(15)
             ->get();

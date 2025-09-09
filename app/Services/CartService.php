@@ -79,6 +79,15 @@ class CartService
         } else {
             $response['discount_amount'] = 0;
         }
+
+        // Tambahkan informasi stok untuk setiap item
+        if (isset($response['items']) && is_array($response['items'])) {
+            foreach ($response['items'] as $i => $item) {
+                $produk = $this->produkRepository->getProdukById($item['id']);
+                $response['items'][$i]['stok'] = $produk ? $produk->stok : 0;
+            }
+        }
+
         return $response;
     }
 
@@ -97,6 +106,32 @@ class CartService
 
         // Ambil cart berdasarkan user ID
         $cart = Cart::name($userId);
+        
+        // Cek quantity yang sudah ada di cart untuk produk ini
+        $existingQty = 0;
+        $cartItems = $cart->getDetails()->get('items');
+        
+        if ($cartItems) {
+            foreach ($cartItems as $item) {
+                if ($item['id'] == $produk->id) {
+                    $existingQty = $item['quantity'];
+                    break;
+                }
+            }
+        }
+        
+        // Total quantity yang akan ada setelah penambahan
+        $totalQty = $existingQty + $qty;
+        
+        // Validasi stok
+        if ($totalQty > $produk->stok) {
+            $sisaStok = $produk->stok - $existingQty;
+            if ($sisaStok <= 0) {
+                throw new \Exception('Stok produk sudah habis di keranjang.');
+            } else {
+                throw new \Exception("Stok tidak mencukupi. Sisa stok yang bisa ditambahkan: {$sisaStok}");
+            }
+        }
 
         // Tambahkan ke cart
         $cart->addItem([
@@ -123,8 +158,28 @@ class CartService
             throw new \Exception('Item tidak ditemukan');
         }
 
+        // Ambil data produk untuk validasi stok
+        $produk = $this->produkRepository->getProdukById($item->getId());
+        
+        if (!$produk) {
+            throw new \Exception('Produk tidak ditemukan');
+        }
+
+        // Hitung quantity baru
+        $newQuantity = $item->getQuantity() + $qty;
+
+        // Validasi quantity tidak boleh kurang dari 0
+        if ($newQuantity <= 0) {
+            throw new \Exception('Quantity tidak boleh kurang dari 1');
+        }
+
+        // Validasi stok
+        if ($newQuantity > $produk->stok) {
+            throw new \Exception("Stok tidak mencukupi. Stok tersedia: {$produk->stok}");
+        }
+
         $cart->updateItem($item->getHash(), [
-            'quantity' => $item->getQuantity() + $qty
+            'quantity' => $newQuantity
         ]);
 
         return $item;
