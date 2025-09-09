@@ -34,7 +34,7 @@
         <th>{{ 'Rp ' . number_format($penjualan->sum('jumlah_total'), 0, ',', '.') }}</th>
     </tr>
     <tr style="background-color: #e8f5e8;">
-        <th colspan="5">Total Pendapatan Penjualan (Qty × Harga Jual)</th>
+        <th colspan="5">Total Pendapatan Penjualan</th>
         <th style="color: #28a745; font-weight: bold;">
             {{ 'Rp ' . number_format($totalSalesRevenue, 0, ',', '.') }}
         </th>

@@ -36,7 +36,7 @@
             <th>{{ number_format( $penjualan->where('status', '!=', 'batal')->sum('total'), 0, ',', '.') }}</th>
         </tr>
         <tr style="background-color: #e8f5e8;">
-            <th colspan="6">Total Pendapatan Penjualan (Qty × Harga Jual)</th>
+            <th colspan="6">Total Pendapatan Penjualan</th>
             <th style="color: #28a745; font-weight: bold;">
                 {{ 'Rp ' . number_format($totalSalesRevenue, 0, ',', '.') }}
             </th>

@@ -109,14 +109,12 @@ class DashboardRepository
         
         $output = [];
         for ($bulan = 1; $bulan <= 12; $bulan++) {
-            // 1. Total Sales Revenue: Sum of (quantity sold × selling price) from detil_penjualan
-            $totalSalesRevenue = DB::table('detil_penjualans')
-                ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
-                ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+            // 1. Total Sales Revenue: Sum of total transaction amounts from penjualans
+            $totalSalesRevenue = DB::table('penjualans')
                 ->where('penjualans.status', '!=', 'batal')
                 ->whereMonth('penjualans.tanggal', $bulan)
                 ->whereYear('penjualans.tanggal', $tahun)
-                ->sum(DB::raw('detil_penjualans.jumlah * produks.harga_jual'));
+                ->sum('penjualans.total');
 
             // 2. Total Cost of Goods Sold: Sum of (quantity sold × cost price) from detil_penjualan
             $totalCostOfGoodsSold = DB::table('detil_penjualans')
@@ -153,13 +151,11 @@ class DashboardRepository
     // Keuntungan/Kerugian per hari dengan logika baru
     public function getKeuntunganKerugianHarian($tanggal)
     {
-        // 1. Total Sales Revenue: Sum of (quantity sold × selling price) from detil_penjualan
-        $totalSalesRevenue = DB::table('detil_penjualans')
-            ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
-            ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+        // 1. Total Sales Revenue: Sum of total transaction amounts from penjualans
+        $totalSalesRevenue = DB::table('penjualans')
             ->where('penjualans.status', '!=', 'batal')
             ->whereDate('penjualans.tanggal', $tanggal)
-            ->sum(DB::raw('detil_penjualans.jumlah * produks.harga_jual'));
+            ->sum('penjualans.total');
 
         // 2. Total Cost of Goods Sold: Sum of (quantity sold × cost price) from detil_penjualan
         $totalCostOfGoodsSold = DB::table('detil_penjualans')
