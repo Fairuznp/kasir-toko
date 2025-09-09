@@ -24,6 +24,12 @@
     </x-alert>
   @endif
 
+  @if (session('error'))
+    <x-alert type="danger">
+      <strong>Gagal!</strong> {{ session('error') }}
+    </x-alert>
+  @endif
+
   <div class="card card-orange card-outline shadow">
     <div class="card-header bg-white border-bottom">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
@@ -70,6 +76,9 @@
                   <div class="d-flex align-items-center">
                     <i class="fas fa-user-circle text-primary mr-2"></i>
                     {{ $user->nama }}
+                    @if(auth()->id() === $user->id)
+                      <span class="badge badge-info ml-2">Anda</span>
+                    @endif
                   </div>
                 </td>
                 <td>
@@ -90,11 +99,18 @@
                        class="btn btn-sm btn-outline-success" title="Edit">
                       <i class="fas fa-edit"></i>
                     </a>
-                    <button type="button" data-toggle="modal" data-target="#modalDelete"
-                            data-url="{{ route('user.destroy', ['user' => $user->id]) }}"
-                            class="btn btn-sm btn-outline-danger btn-delete" title="Hapus">
-                      <i class="fas fa-trash"></i>
-                    </button>
+                    @if(auth()->id() !== $user->id)
+                      <button type="button" data-toggle="modal" data-target="#modalDelete"
+                              data-url="{{ route('user.destroy', ['user' => $user->id]) }}"
+                              class="btn btn-sm btn-outline-danger btn-delete" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    @else
+                      <button type="button" class="btn btn-sm btn-outline-secondary" 
+                              title="Tidak dapat menghapus akun sendiri" disabled>
+                        <i class="fas fa-lock"></i>
+                      </button>
+                    @endif
                   </div>
                 </td>
               </tr>
@@ -124,6 +140,9 @@
                     <span class="badge badge-secondary mr-2">{{ $users->firstItem() + $key }}</span>
                     <i class="fas fa-user-circle text-primary mr-2"></i>
                     <h6 class="mb-0 font-weight-semibold">{{ $user->nama }}</h6>
+                    @if(auth()->id() === $user->id)
+                      <span class="badge badge-info ml-2">Anda</span>
+                    @endif
                   </div>
                   <div class="text-sm">
                     <i class="fas fa-at text-success mr-1"></i>
@@ -135,11 +154,18 @@
                      class="btn btn-sm btn-outline-success">
                     <i class="fas fa-edit"></i>
                   </a>
-                  <button type="button" data-toggle="modal" data-target="#modalDelete"
-                          data-url="{{ route('user.destroy', ['user' => $user->id]) }}"
-                          class="btn btn-sm btn-outline-danger btn-delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                  @if(auth()->id() !== $user->id)
+                    <button type="button" data-toggle="modal" data-target="#modalDelete"
+                            data-url="{{ route('user.destroy', ['user' => $user->id]) }}"
+                            class="btn btn-sm btn-outline-danger btn-delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  @else
+                    <button type="button" class="btn btn-sm btn-outline-secondary" 
+                            title="Tidak dapat menghapus akun sendiri" disabled>
+                      <i class="fas fa-lock"></i>
+                    </button>
+                  @endif
                 </div>
               </div>
             </div>
@@ -184,6 +210,9 @@
   .card.border-bottom:last-child { border-bottom: none !important; }
   .btn-group .btn { border-radius: 0.25rem !important; margin-left: 2px; }
   .btn-group .btn:first-child { margin-left: 0; }
+  .btn:disabled { cursor: not-allowed; opacity: 0.6; }
+  .btn:disabled:hover { transform: none; }
+  .badge-info { background-color: #17a2b8; color: white; font-size: 0.75rem; }
 </style>
 @endsection
 

@@ -71,6 +71,11 @@ class UserControler extends Controller
 
     public function destroy(User $user)
     {
+        // Cek apakah user yang akan dihapus adalah user yang sedang login
+        if (auth()->id() === $user->id) {
+            return back()->with('error', 'Anda tidak dapat menghapus akun yang sedang Anda gunakan!');
+        }
+
         $this->userService->deleteUser($user);
 
         return back()->with('destroy', 'success');

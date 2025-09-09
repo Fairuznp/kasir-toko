@@ -43,6 +43,8 @@ Route::middleware('auth')->group(function () {
     Route::get('laporan/bulanan', [LaporanController::class, 'bulanan'])->name('laporan.bulanan');
     Route::get('laporan/produk-bulanan', [LaporanController::class, 'produkBulanan'])->name('laporan.produkBulanan');
     Route::get('laporan/produk-bulanan/cetak', [LaporanController::class, 'cetakProdukBulanan'])->name('laporan.produkBulanan.cetak');
+    Route::get('laporan/produk-harian', [LaporanController::class, 'produkHarian'])->name('laporan.produkHarian');
+    Route::get('laporan/produk-harian/cetak', [LaporanController::class, 'cetakProdukHarian'])->name('laporan.produkHarian.cetak');
     Route::get('transaksi/produk', [TransaksiController::class, 'produk'])
         ->name('transaksi.produk');
 

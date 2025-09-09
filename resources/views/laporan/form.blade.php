@@ -27,6 +27,26 @@ class="card card-orange card-outline">
 </div>
 
 <div class="col-lg-6 col-xl-4">
+<form target="_blank" method="GET" action="{{ route('laporan.produkHarian.cetak') }}"
+class="card card-info card-outline">
+<div class="card-header">
+<h3 class="card-title">Buat Laporan Produk Harian</h3>
+</div>
+<div class="card-body">
+<div class="form-group">
+<label>Tanggal</label>
+<input type="date" name="tanggal" class="form-control">
+</div>
+</div>
+<div class="card-footer">
+<button type="submit" class="btn btn-primary">
+<i class="fas fa-print mr-2"></i> Cetak
+</button>
+</div>
+</form>
+</div>
+
+<div class="col-lg-6 col-xl-4">
 <form target="_blank" method="GET" action="{{ route('laporan.bulanan') }}"
 class="card card-orange card-outline">
 <div class="card-header">

@@ -46,4 +46,25 @@ class LaporanRepository
             ->orderByDesc('total_terjual')
             ->get();
     }
+
+    // Laporan produk terjual per hari
+    public function getLaporanProdukHarian($tanggal)
+    {
+        return DB::table('detil_penjualans')
+            ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+            ->join('kategoris', 'produks.kategori_id', '=', 'kategoris.id')
+            ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
+            ->select(
+                'produks.nama_produk',
+                'kategoris.nama_kategori',
+                'produks.harga_jual',
+                DB::raw('SUM(detil_penjualans.jumlah) as total_terjual'),
+                DB::raw('SUM(detil_penjualans.subtotal) as total_pendapatan')
+            )
+            ->whereDate('penjualans.tanggal', $tanggal)
+            ->where('penjualans.status', '!=', 'batal')
+            ->groupBy('produks.id', 'produks.nama_produk', 'kategoris.nama_kategori', 'produks.harga_jual')
+            ->orderByDesc('total_terjual')
+            ->get();
+    }
 }

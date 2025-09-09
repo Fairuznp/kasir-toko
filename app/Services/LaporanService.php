@@ -49,4 +49,9 @@ class LaporanService
     {
         return $this->laporanRepository->getLaporanProdukBulanan($bulan, $tahun);
     }
+
+    public function getLaporanProdukHarian($tanggal)
+    {
+        return $this->laporanRepository->getLaporanProdukHarian($tanggal);
+    }
 }

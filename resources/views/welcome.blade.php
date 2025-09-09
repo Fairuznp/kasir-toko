@@ -321,63 +321,6 @@
             </a>
         </div>
         
-        <!-- Target Cards -->
-        <div class="user-grid mt-4">
-            <div class="stat-card {{ $target_harian['percentage'] < 25 ? 'danger' : ($target_harian['percentage'] < 75 ? 'warning' : 'success') }}">
-                <div class="stat-header">
-                    <div>
-                        <div class="stat-number">
-                            @if($target_harian['percentage'] >= 100)
-                                <span style="font-size: 1.5rem; color: #10b981;">✓ Terpenuhi</span>
-                            @else
-                                Rp {{ number_format($target_harian['target'], 0, ',', '.') }}
-                            @endif
-                        </div>
-                        <div class="stat-title">Target Harian</div>
-                    </div>
-                    <div class="stat-icon {{ $target_harian['percentage'] < 25 ? 'danger' : ($target_harian['percentage'] < 75 ? 'warning' : 'success') }}">
-                        <i class="fas fa-bullseye"></i>
-                    </div>
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar-custom">
-                        <div class="progress-fill {{ $target_harian['percentage'] < 25 ? 'danger' : ($target_harian['percentage'] < 75 ? 'warning' : 'success') }}" 
-                             style="width: {{ $target_harian['percentage'] }}%"></div>
-                    </div>
-                    <div class="progress-info">
-                        {{ number_format($target_harian['current'], 0, ',', '.') }}/{{ number_format($target_harian['target'], 0, ',', '.') }} ({{ $target_harian['percentage'] }}%)
-                    </div>
-                </div>
-            </div>
-            
-            <div class="stat-card {{ $target_bulanan['percentage'] < 25 ? 'danger' : ($target_bulanan['percentage'] < 75 ? 'warning' : 'success') }}">
-                <div class="stat-header">
-                    <div>
-                        <div class="stat-number">
-                            @if($target_bulanan['percentage'] >= 100)
-                                <span style="font-size: 1.5rem; color: #10b981;">✓ Terpenuhi</span>
-                            @else
-                                Rp {{ number_format($target_bulanan['target'], 0, ',', '.') }}
-                            @endif
-                        </div>
-                        <div class="stat-title">Target Bulanan</div>
-                    </div>
-                    <div class="stat-icon {{ $target_bulanan['percentage'] < 25 ? 'danger' : ($target_bulanan['percentage'] < 75 ? 'warning' : 'success') }}">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar-custom">
-                        <div class="progress-fill {{ $target_bulanan['percentage'] < 25 ? 'danger' : ($target_bulanan['percentage'] < 75 ? 'warning' : 'success') }}" 
-                             style="width: {{ $target_bulanan['percentage'] }}%"></div>
-                    </div>
-                    <div class="progress-info">
-                        {{ number_format($target_bulanan['current'], 0, ',', '.') }}/{{ number_format($target_bulanan['target'], 0, ',', '.') }} ({{ $target_bulanan['percentage'] }}%)
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <div class="chart-card animate-fade-in mt-4">
             <div class="chart-header">
                 <div class="chart-icon">
@@ -436,6 +379,63 @@
         </div>
     </div>
 </div>
+
+        <!-- Target Cards -->
+        <div class="user-grid mt-4">
+            <div class="stat-card {{ $target_harian['percentage'] < 25 ? 'danger' : ($target_harian['percentage'] < 75 ? 'warning' : 'success') }}">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number">
+                            @if($target_harian['percentage'] >= 100)
+                                <span style="font-size: 1.5rem; color: #10b981;">✓ Terpenuhi</span>
+                            @else
+                                Rp {{ number_format($target_harian['target'], 0, ',', '.') }}
+                            @endif
+                        </div>
+                        <div class="stat-title">Target Harian</div>
+                    </div>
+                    <div class="stat-icon {{ $target_harian['percentage'] < 25 ? 'danger' : ($target_harian['percentage'] < 75 ? 'warning' : 'success') }}">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill {{ $target_harian['percentage'] < 25 ? 'danger' : ($target_harian['percentage'] < 75 ? 'warning' : 'success') }}" 
+                             style="width: {{ $target_harian['percentage'] }}%"></div>
+                    </div>
+                    <div class="progress-info">
+                        {{ number_format($target_harian['current'], 0, ',', '.') }}/{{ number_format($target_harian['target'], 0, ',', '.') }} ({{ $target_harian['percentage'] }}%)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card {{ $target_bulanan['percentage'] < 25 ? 'danger' : ($target_bulanan['percentage'] < 75 ? 'warning' : 'success') }}">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number">
+                            @if($target_bulanan['percentage'] >= 100)
+                                <span style="font-size: 1.5rem; color: #10b981;">✓ Terpenuhi</span>
+                            @else
+                                Rp {{ number_format($target_bulanan['target'], 0, ',', '.') }}
+                            @endif
+                        </div>
+                        <div class="stat-title">Target Bulanan</div>
+                    </div>
+                    <div class="stat-icon {{ $target_bulanan['percentage'] < 25 ? 'danger' : ($target_bulanan['percentage'] < 75 ? 'warning' : 'success') }}">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill {{ $target_bulanan['percentage'] < 25 ? 'danger' : ($target_bulanan['percentage'] < 75 ? 'warning' : 'success') }}" 
+                             style="width: {{ $target_bulanan['percentage'] }}%"></div>
+                    </div>
+                    <div class="progress-info">
+                        {{ number_format($target_bulanan['current'], 0, ',', '.') }}/{{ number_format($target_bulanan['target'], 0, ',', '.') }} ({{ $target_bulanan['percentage'] }}%)
+                    </div>
+                </div>
+            </div>
+        </div>
 @endsection
 
 @push('scripts')

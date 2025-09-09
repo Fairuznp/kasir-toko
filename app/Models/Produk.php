@@ -17,6 +17,8 @@ class Produk extends Model
         'nama_produk',
         'harga_modal',
         'harga_jual',
+        'pricing_type',
+        'margin_percentage',
         'stok',
     ];
 

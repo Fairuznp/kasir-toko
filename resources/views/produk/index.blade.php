@@ -55,6 +55,18 @@
                             <p class="card-text">
                                 <strong>Harga Modal:</strong> {{ number_format($produk->harga_modal, 0, ',', '.') }}<br>
                                 <strong>Harga Jual:</strong> {{ number_format($produk->harga_jual, 0, ',', '.') }}<br>
+                                <strong>Pricing:</strong> 
+                                @if(($produk->pricing_type ?? 'manual') === 'margin')
+                                    <span class="badge badge-info">
+                                        <i class="fas fa-percentage mr-1"></i>
+                                        Margin {{ number_format($produk->margin_percentage ?? 0, 1) }}%
+                                    </span>
+                                @else
+                                    <span class="badge badge-secondary">
+                                        <i class="fas fa-edit mr-1"></i>
+                                        Manual
+                                    </span>
+                                @endif<br>
                                 <strong>Stok:</strong> {{ $produk->stok }}
                             </p>
                         </div>
@@ -75,6 +87,7 @@
                                 <th>Kategori</th>
                                 <th>Harga Modal</th>
                                 <th>Harga Jual</th>
+                                <th>Pricing</th>
                                 <th>Stok</th>
                                 <th></th>
                             </tr>
@@ -95,6 +108,19 @@
                                     <td>{{ $produk->nama_kategori }}</td>
                                     <td>{{ number_format($produk->harga_modal, 0, ',', '.') }}</td>
                                     <td>{{ number_format($produk->harga_jual, 0, ',', '.') }}</td>
+                                    <td>
+                                        @if(($produk->pricing_type ?? 'manual') === 'margin')
+                                            <span class="badge badge-info">
+                                                <i class="fas fa-percentage mr-1"></i>
+                                                Margin {{ number_format($produk->margin_percentage ?? 0, 1) }}%
+                                            </span>
+                                        @else
+                                            <span class="badge badge-secondary">
+                                                <i class="fas fa-edit mr-1"></i>
+                                                Manual
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td>{{ $produk->stok }}</td>
                                     <td class="text-right">
                                         <a href="{{ route('produk.edit', ['produk' => $produk->id]) }}"

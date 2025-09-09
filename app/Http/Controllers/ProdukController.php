@@ -36,17 +36,44 @@ class ProdukController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'kode_produk' => ['required', 'max:250', 'unique:produks'],
             'nama_produk' => ['required', 'max:150'],
-            'harga_modal' => ['required', 'numeric'],
-            'harga_jual'  => ['required', 'numeric'],
+            'harga_modal' => ['required'],
             'kategori_id' => ['required', 'exists:kategoris,id'],
-        ]);
+            'pricing_type' => ['required', 'in:manual,margin'],
+        ];
 
-        $this->produkService->createProduk($request->all());
+        // Validasi conditional berdasarkan tipe pricing
+        if ($request->pricing_type === 'manual') {
+            $rules['harga_jual'] = ['required'];
+        } else if ($request->pricing_type === 'margin') {
+            $rules['margin_percentage'] = ['required', 'numeric', 'min:0'];
+        }
 
-        return redirect()->route('produk.index')->with('store', 'success');
+        $request->validate($rules);
+
+        // Konversi format Rupiah ke angka
+        $data = $request->all();
+        $data['harga_modal'] = (float) preg_replace('/[^\d]/', '', $data['harga_modal']);
+        
+        // Jika menggunakan margin, hitung harga jual otomatis
+        if ($data['pricing_type'] === 'margin' && isset($data['margin_percentage'])) {
+            $hargaModal = $data['harga_modal'];
+            $margin = (float) $data['margin_percentage'];
+            $data['harga_jual'] = $hargaModal + ($hargaModal * $margin / 100);
+        } else {
+            // Mode manual
+            $data['harga_jual'] = (float) preg_replace('/[^\d]/', '', $data['harga_jual']);
+        }
+
+        try {
+            $this->produkService->createProduk($data);
+            return redirect()->route('produk.index')->with('store', 'success');
+        } catch (\Exception $e) {
+            \Log::error('Error creating product: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['error' => 'Gagal menyimpan produk: ' . $e->getMessage()]);
+        }
     }
 
     public function show(Produk $produk)
@@ -69,12 +96,26 @@ class ProdukController extends Controller
         $request->validate([
             'kode_produk' => ['required', 'max:250', 'unique:produks,kode_produk,' . $produk->id],
             'nama_produk' => ['required', 'max:150'],
-            'harga_modal' => ['required', 'numeric'],
-            'harga_jual'  => ['required', 'numeric'],
+            'harga_modal' => ['required'],
+            'harga_jual'  => ['required'],
             'kategori_id' => ['required', 'exists:kategoris,id'],
+            'pricing_type' => ['required', 'in:manual,margin'],
+            'margin_percentage' => ['nullable', 'numeric', 'min:0', 'required_if:pricing_type,margin'],
         ]);
 
-        $this->produkService->updateProduk($produk, $request->all());
+        // Konversi format Rupiah ke angka
+        $data = $request->all();
+        $data['harga_modal'] = (float) preg_replace('/[^\d]/', '', $data['harga_modal']);
+        $data['harga_jual'] = (float) preg_replace('/[^\d]/', '', $data['harga_jual']);
+
+        // Jika menggunakan margin, hitung harga jual otomatis
+        if ($data['pricing_type'] === 'margin' && isset($data['margin_percentage'])) {
+            $hargaModal = $data['harga_modal'];
+            $margin = (float) $data['margin_percentage'];
+            $data['harga_jual'] = $hargaModal + ($hargaModal * $margin / 100);
+        }
+
+        $this->produkService->updateProduk($produk, $data);
 
         return redirect()->route('produk.index')->with('update', 'success');
     }

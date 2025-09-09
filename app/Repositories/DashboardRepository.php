@@ -102,52 +102,89 @@ class DashboardRepository
             ->get();
     }
 
-    // Keuntungan/Kerugian per bulan
+    // Keuntungan/Kerugian per bulan dengan logika baru
     public function getKeuntunganKerugianPerBulan()
     {
         $tahun = date('Y');
-        // Jumlah total transaksi (omzet) per bulan
-        $result = DB::table('penjualans')
-            ->select(
-                DB::raw('MONTH(tanggal) as bulan'),
-                DB::raw('YEAR(tanggal) as tahun'),
-                DB::raw('SUM(total) as jumlah_total')
-            )
-            ->where('status', '!=', 'batal')
-            ->whereYear('tanggal', $tahun)
-            ->groupBy('tahun', 'bulan')
-            ->orderBy('bulan', 'asc')
-            ->get();
-
-        $pengeluaran = $this->getPengeluaranStokPerBulan();
-        $pengeluaran = array_values($pengeluaran);
-        
-        $dataBulan = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $dataBulan[$i] = 0;
-        }
-        
-        foreach ($result as $row) {
-            $dataBulan[(int)$row->bulan] = (int)$row->jumlah_total;
-        }
         
         $output = [];
-        foreach ($dataBulan as $idx => $total) {
-            $bulan = $idx;
-            // Fix: pengeluaran array dimulai dari index 0, jadi kita perlu -1
-            $total_pengeluaran = isset($pengeluaran[$idx - 1]) ? $pengeluaran[$idx - 1]->total_pengeluaran : 0;
-            $selisih = $total - $total_pengeluaran;
+        for ($bulan = 1; $bulan <= 12; $bulan++) {
+            // 1. Total Sales Revenue: Sum of (quantity sold × selling price) from detil_penjualan
+            $totalSalesRevenue = DB::table('detil_penjualans')
+                ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
+                ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+                ->where('penjualans.status', '!=', 'batal')
+                ->whereMonth('penjualans.tanggal', $bulan)
+                ->whereYear('penjualans.tanggal', $tahun)
+                ->sum(DB::raw('detil_penjualans.jumlah * produks.harga_jual'));
+
+            // 2. Total Cost of Goods Sold: Sum of (quantity sold × cost price) from detil_penjualan
+            $totalCostOfGoodsSold = DB::table('detil_penjualans')
+                ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
+                ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+                ->where('penjualans.status', '!=', 'batal')
+                ->whereMonth('penjualans.tanggal', $bulan)
+                ->whereYear('penjualans.tanggal', $tahun)
+                ->sum(DB::raw('detil_penjualans.jumlah * produks.harga_modal'));
+
+            // 3. Total Expired Product Cost: Sum of (expired quantity × cost price) from produk_expired
+            $totalExpiredCost = DB::table('produk_expireds')
+                ->join('produks', 'produk_expireds.produk_id', '=', 'produks.id')
+                ->whereMonth('produk_expireds.tanggal_expired', $bulan)
+                ->whereYear('produk_expireds.tanggal_expired', $tahun)
+                ->sum(DB::raw('produk_expireds.jumlah * produks.harga_modal'));
+
+            // 4. Profit/Loss = Total Sales Revenue - Total Cost of Goods Sold - Total Expired Product Cost
+            $keuntunganKerugian = $totalSalesRevenue - $totalCostOfGoodsSold - $totalExpiredCost;
             
             $output[] = (object) [
                 'bulan' => $bulan,
                 'tahun' => (int)$tahun,
-                'total_transaksi' => $total,
-                'total_pengeluaran' => $total_pengeluaran,
-                'keuntungan_kerugian' => $selisih,
-                'status' => $selisih >= 0 ? 'keuntungan' : 'kerugian'
+                'total_sales_revenue' => $totalSalesRevenue ?? 0,
+                'total_cost_of_goods_sold' => $totalCostOfGoodsSold ?? 0,
+                'total_expired_cost' => $totalExpiredCost ?? 0,
+                'keuntungan_kerugian' => $keuntunganKerugian,
+                'status' => $keuntunganKerugian >= 0 ? 'keuntungan' : 'kerugian'
             ];
         }
         return $output;
+    }
+
+    // Keuntungan/Kerugian per hari dengan logika baru
+    public function getKeuntunganKerugianHarian($tanggal)
+    {
+        // 1. Total Sales Revenue: Sum of (quantity sold × selling price) from detil_penjualan
+        $totalSalesRevenue = DB::table('detil_penjualans')
+            ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
+            ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+            ->where('penjualans.status', '!=', 'batal')
+            ->whereDate('penjualans.tanggal', $tanggal)
+            ->sum(DB::raw('detil_penjualans.jumlah * produks.harga_jual'));
+
+        // 2. Total Cost of Goods Sold: Sum of (quantity sold × cost price) from detil_penjualan
+        $totalCostOfGoodsSold = DB::table('detil_penjualans')
+            ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
+            ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+            ->where('penjualans.status', '!=', 'batal')
+            ->whereDate('penjualans.tanggal', $tanggal)
+            ->sum(DB::raw('detil_penjualans.jumlah * produks.harga_modal'));
+
+        // 3. Total Expired Product Cost: Sum of (expired quantity × cost price) from produk_expired
+        $totalExpiredCost = DB::table('produk_expireds')
+            ->join('produks', 'produk_expireds.produk_id', '=', 'produks.id')
+            ->whereDate('produk_expireds.tanggal_expired', $tanggal)
+            ->sum(DB::raw('produk_expireds.jumlah * produks.harga_modal'));
+
+        // 4. Profit/Loss = Total Sales Revenue - Total Cost of Goods Sold - Total Expired Product Cost
+        $keuntunganKerugian = $totalSalesRevenue - $totalCostOfGoodsSold - $totalExpiredCost;
+        
+        return [
+            'total_sales_revenue' => $totalSalesRevenue ?? 0,
+            'total_cost_of_goods_sold' => $totalCostOfGoodsSold ?? 0,
+            'total_expired_cost' => $totalExpiredCost ?? 0,
+            'keuntungan_kerugian' => $keuntunganKerugian,
+            'status' => $keuntunganKerugian >= 0 ? 'keuntungan' : 'kerugian'
+        ];
     }
 
     // Target harian berdasarkan pengeluaran stok dibagi jumlah hari dalam bulan

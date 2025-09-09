@@ -2,7 +2,8 @@
 
 <input type="{{ $type }}" name="{{ $name }}" 
        class="form-control @error($name) is-invalid @enderror" 
-       value="<?= old($name, isset($value) ? $value : '') ?>" />
+       value="<?= old($name, isset($value) ? $value : '') ?>" 
+       {{ $attributes }} />
 
 @error($name)
 <div class="invalid-feedback">
