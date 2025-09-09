@@ -13,7 +13,7 @@ class DashboardService
         $this->dashboardRepository = $dashboardRepository;
     }
 
-    public function getDashboardData()
+    public function getDashboardData($mode = 'daily')
     {
         $produkTerjual = $this->dashboardRepository->getProdukTerjualBulanIni();
         $user = $this->dashboardRepository->getUserCount();
@@ -21,31 +21,34 @@ class DashboardService
         $diskon = $this->dashboardRepository->getDiscountCount();
         $kategori = $this->dashboardRepository->getKategoriCount();
         $produk = $this->dashboardRepository->getProdukCount();
-        $penjualan = $this->dashboardRepository->getPenjualanThisMonth();
+        $penjualan = $this->dashboardRepository->getPenjualanThisMonth($mode);
         $pengeluaranStok = $this->dashboardRepository->getPengeluaranStokPerBulan();
 
         $nama_bulan = [
-            'Januari',
-            'Februari',
-            'Maret',
-            'April',
-            'Mei',
-            'Juni',
-            'Juli',
-            'Agustus',
-            'September',
-            'Oktober',
-            'November',
-            'Desember'
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
         ];
 
-        $label = 'Transaksi ' . $nama_bulan[date('m') - 1] . ' ' . date('Y');
-        $labels = [];
-        $data = [];
+        // Prepare chart data based on mode
+        if ($mode === 'monthly') {
+            $label = 'Transaksi per Bulan ' . date('Y');
+            $labels = [];
+            $data = [];
 
-        foreach ($penjualan as $row) {
-            $labels[] = substr($row->tgl, 0, 2);
-            $data[] = (int) $row->jumlah_total;
+            foreach ($penjualan as $row) {
+                $labels[] = $nama_bulan[$row->bulan - 1];
+                $data[] = (int) $row->jumlah_total;
+            }
+        } else {
+            // Daily mode
+            $label = 'Transaksi ' . $nama_bulan[date('m') - 1] . ' ' . date('Y');
+            $labels = [];
+            $data = [];
+
+            foreach ($penjualan as $row) {
+                $labels[] = substr($row->tgl, 0, 2); // Extract day part (DD)
+                $data[] = (int) $row->jumlah_total;
+            }
         }
 
         // Siapkan data chart pengeluaran stok

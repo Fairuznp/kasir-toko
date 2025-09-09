@@ -37,17 +37,74 @@ class DashboardRepository
         return Diskon::selectRaw('count(*) as jumlah')->first();
     }
 
-    public function getPenjualanThisMonth()
+    public function getPenjualanThisMonth($mode = 'daily')
     {
-        return Penjualan::select(
-            DB::raw('SUM(total) as jumlah_total'),
-            DB::raw("DATE_FORMAT(tanggal, '%d/%m/%Y') tgl")
+        if ($mode === 'monthly') {
+            return $this->getPenjualanThisYear();
+        }
+
+        // Mode daily - data per tanggal dalam bulan ini
+        $bulan = date('m');
+        $tahun = date('Y');
+        $jumlahHari = date('t'); // Jumlah hari dalam bulan
+
+        // Ambil data transaksi yang ada
+        $transaksi = Penjualan::select(
+            DB::raw('DAY(tanggal) as hari'),
+            DB::raw('SUM(total) as jumlah_total')
         )
-            ->where('status', '!=', 'batal') // Filter transaksi batal tidak dihitung
-            ->whereMonth('tanggal', date('m'))
-            ->whereYear('tanggal', date('Y'))
-            ->groupBy('tgl')
-            ->get();
+            ->where('status', '!=', 'batal')
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->groupBy(DB::raw('DAY(tanggal)'))
+            ->pluck('jumlah_total', 'hari')
+            ->toArray();
+
+        // Buat array lengkap untuk semua tanggal dalam bulan
+        $result = [];
+        for ($hari = 1; $hari <= $jumlahHari; $hari++) {
+            $result[] = (object) [
+                'tgl' => sprintf('%02d/%02d/%s', $hari, $bulan, $tahun),
+                'hari' => $hari,
+                'jumlah_total' => isset($transaksi[$hari]) ? (int) $transaksi[$hari] : 0
+            ];
+        }
+
+        return collect($result);
+    }
+
+    public function getPenjualanThisYear()
+    {
+        $tahun = date('Y');
+
+        // Ambil data transaksi yang ada per bulan
+        $transaksi = Penjualan::select(
+            DB::raw('MONTH(tanggal) as bulan'),
+            DB::raw('SUM(total) as jumlah_total')
+        )
+            ->where('status', '!=', 'batal')
+            ->whereYear('tanggal', $tahun)
+            ->groupBy(DB::raw('MONTH(tanggal)'))
+            ->pluck('jumlah_total', 'bulan')
+            ->toArray();
+
+        // Buat array lengkap untuk semua bulan dalam tahun
+        $nama_bulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $result = [];
+        for ($bulan = 1; $bulan <= 12; $bulan++) {
+            $result[] = (object) [
+                'tgl' => $nama_bulan[$bulan] . ' ' . $tahun,
+                'bulan' => $bulan,
+                'jumlah_total' => isset($transaksi[$bulan]) ? (int) $transaksi[$bulan] : 0
+            ];
+        }
+
+        return collect($result);
     }
     // Pengeluaran stok per bulan
     public function getPengeluaranStokPerBulan()

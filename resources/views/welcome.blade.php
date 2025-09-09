@@ -141,9 +141,15 @@
     .chart-header {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
         border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .chart-header .left-section {
+        display: flex;
+        align-items: center;
     }
     
     .chart-title {
@@ -163,6 +169,51 @@
         justify-content: center;
         margin-right: 0.75rem;
         color: #64748b;
+    }
+    
+    .chart-controls {
+        display: flex;
+        align-items: center;
+    }
+    
+    .chart-controls .btn-group .btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+    }
+    
+    .chart-controls .btn-group .btn:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .chart-controls .btn-group .btn:last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-left: 0;
+    }
+
+    @media (max-width: 768px) {
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .chart-controls {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .chart-controls .btn-group {
+            width: 100%;
+        }
+        
+        .chart-controls .btn-group .btn {
+            flex: 1;
+            text-align: center;
+        }
     }
     
     .admin-section {
@@ -323,10 +374,24 @@
         
         <div class="chart-card animate-fade-in mt-4">
             <div class="chart-header">
-                <div class="chart-icon">
-                    <i class="fas fa-chart-line"></i>
+                <div class="left-section">
+                    <div class="chart-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="chart-title">Analytics Overview</h3>
                 </div>
-                <h3 class="chart-title">Analytics Overview</h3>
+                <div class="chart-controls">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="{{ route('dashboard', ['mode' => 'daily']) }}" 
+                           class="btn {{ ($current_mode ?? 'daily') === 'daily' ? 'btn-primary' : 'btn-outline-primary' }}">
+                            <i class="fas fa-calendar-day"></i> Harian
+                        </a>
+                        <a href="{{ route('dashboard', ['mode' => 'monthly']) }}" 
+                           class="btn {{ ($current_mode ?? 'daily') === 'monthly' ? 'btn-primary' : 'btn-outline-primary' }}">
+                            <i class="fas fa-calendar-alt"></i> Bulanan
+                        </a>
+                    </div>
+                </div>
             </div>
             <div style="position: relative; height: 400px;">
                 <canvas id="myChart"></canvas>

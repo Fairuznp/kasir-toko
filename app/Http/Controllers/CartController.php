@@ -48,7 +48,7 @@ class CartController extends Controller
     public function update(Request $request, $hash)
     {
         $request->validate([
-            'qty' => ['required', 'in:-1,1']
+            'qty' => ['required', 'integer', 'not_in:0']
         ]);
 
         try {

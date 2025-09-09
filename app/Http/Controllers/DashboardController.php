@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Services\DashboardService;
 
 class DashboardController extends Controller
@@ -13,10 +14,11 @@ class DashboardController extends Controller
         $this->dashboardService = $dashboardService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->dashboardService->getDashboardData();
+        $mode = $request->get('mode', 'daily'); // default to daily
+        $data = $this->dashboardService->getDashboardData($mode);
 
-        return view('welcome', $data);
+        return view('welcome', array_merge($data, ['current_mode' => $mode]));
     }
 }

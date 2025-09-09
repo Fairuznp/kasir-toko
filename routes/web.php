@@ -29,6 +29,7 @@ use App\Models\Pelanggan;
 */
 
 Route::get('/', [DashboardController::class, 'index'])->name('home')->middleware('auth');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 Route::view('login', 'auth.login')->name('login')->middleware('guest');
 Route::post('login', [AuthController::class, 'login'])->middleware('guest');
 Route::post('logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

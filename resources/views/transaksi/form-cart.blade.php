@@ -174,6 +174,38 @@
     </div>
 </form>
 
+<!-- Quantity Modal -->
+<div class="modal fade" id="qtyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <form id="qtyForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qtyModalTitle">Masukkan Jumlah</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="qtyInput" class="form-label">Quantity:</label>
+                        <input type="number" class="form-control form-control-lg text-center" 
+                               id="qtyInput" value="1" min="1" required>
+                    </div>
+                    <div class="card bg-light">
+                        <div class="card-body p-3">
+                            <div id="currentQtyInfo" class="small"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="qtySubmitBtn">
+                        <i class="fas fa-check mr-2"></i><span id="qtySubmitText">Update</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     $(function() {
@@ -234,10 +266,10 @@
         } = item;
 
         let btn = `<div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-success" onclick="ePut('${hash}',1)" title="Tambah">
+                        <button type="button" class="btn btn-success" onclick="openQtyModal('${hash}', ${quantity}, 'add')" title="Tambah">
                             <i class="fas fa-plus"></i>
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="ePut('${hash}',-1)" title="Kurang">
+                        <button type="button" class="btn btn-primary" onclick="openQtyModal('${hash}', ${quantity}, 'subtract')" title="Kurang">
                             <i class="fas fa-minus"></i>
                         </button>
                         <button type="button" class="btn btn-danger" onclick="eDel('${hash}')" title="Hapus">
@@ -291,6 +323,158 @@
             }
         });
     }
+    
+    // Global variables for modal
+    let currentHash = null;
+    let currentQty = 0;
+    let actionType = null;
+    
+    function openQtyModal(hash, currentQuantity, action) {
+        currentHash = hash;
+        currentQty = currentQuantity;
+        actionType = action;
+        
+        // Set modal title and info based on action
+        if (action === 'add') {
+            $('#qtyModalTitle').text('Tambah Quantity');
+            $('#qtySubmitText').text('Tambah');
+            $('#qtySubmitBtn').removeClass('btn-primary').addClass('btn-success');
+            $('#qtySubmitBtn i').removeClass('fa-check').addClass('fa-plus');
+        } else {
+            $('#qtyModalTitle').text('Kurangi Quantity');
+            $('#qtySubmitText').text('Kurangi');
+            $('#qtySubmitBtn').removeClass('btn-success').addClass('btn-primary');
+            $('#qtySubmitBtn i').removeClass('fa-plus').addClass('fa-minus');
+            $('#qtyInput').attr('max', currentQuantity);
+        }
+        
+        // Reset input value
+        $('#qtyInput').val(1);
+        
+        // Update info display
+        updateQtyInfo();
+        
+        // Show modal
+        $('#qtyModal').modal('show');
+    }
+    
+    function updateQtyInfo() {
+        const inputQty = parseInt($('#qtyInput').val()) || 0;
+        let infoText = '';
+        let isValid = true;
+        
+        if (actionType === 'add') {
+            const newQty = currentQty + inputQty;
+            infoText = `<div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span>Quantity saat ini:</span>
+                                    <strong>${currentQty}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span>Akan ditambah:</span>
+                                    <strong class="text-primary">+${inputQty}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span><strong>Total quantity:</strong></span>
+                                    <strong class="text-success">${newQty}</strong>
+                                </div>
+                            </div>
+                        </div>`;
+        } else {
+            const newQty = Math.max(0, currentQty - inputQty);
+            isValid = inputQty <= currentQty;
+            
+            infoText = `<div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span>Quantity saat ini:</span>
+                                    <strong>${currentQty}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span>Akan dikurangi:</span>
+                                    <strong class="text-warning">-${inputQty}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span><strong>Sisa quantity:</strong></span>
+                                    <strong class="${isValid ? 'text-success' : 'text-danger'}">${newQty}</strong>
+                                </div>
+                            </div>
+                        </div>`;
+            
+            if (!isValid) {
+                infoText += `<div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="alert alert-danger py-2 mb-0">
+                                        <small><i class="fas fa-exclamation-triangle"></i> Tidak bisa kurangi lebih dari quantity saat ini!</small>
+                                    </div>
+                                </div>
+                            </div>`;
+            }
+        }
+        
+        $('#currentQtyInfo').html(infoText);
+        
+        // Enable/disable submit button based on validation
+        $('#qtySubmitBtn').prop('disabled', !isValid || inputQty <= 0);
+    }
+    
+    // Handle form submission
+    $('#qtyForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const inputQty = parseInt($('#qtyInput').val());
+        let finalQty;
+        
+        if (actionType === 'add') {
+            finalQty = inputQty; // Positive number for addition
+        } else {
+            finalQty = -inputQty; // Negative number for subtraction
+        }
+        
+        // Validate quantity for subtraction
+        if (actionType === 'subtract' && inputQty > currentQty) {
+            alert('Quantity yang dikurangi tidak boleh lebih dari quantity saat ini!');
+            return;
+        }
+        
+        // Call the update function
+        ePut(currentHash, finalQty);
+        
+        // Hide modal
+        $('#qtyModal').modal('hide');
+    });
+    
+    // Update info when input changes
+    $('#qtyInput').on('input', function() {
+        updateQtyInfo();
+    });
+    
+    // Reset modal when hidden
+    $('#qtyModal').on('hidden.bs.modal', function() {
+        $('#qtyInput').removeAttr('max');
+        currentHash = null;
+        currentQty = 0;
+        actionType = null;
+    });
     
     function terapkanDiskon() {
         const kodeDiskon = $('#kodeDiskon').val();
