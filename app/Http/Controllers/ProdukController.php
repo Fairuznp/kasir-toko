@@ -18,7 +18,9 @@ class ProdukController extends Controller
 
     public function index(Request $request)
     {
-        $produks = $this->produkService->getAllProduk($request->search);
+        $search = $request->search;
+        $searchExact = $request->search_exact;
+        $produks = $this->produkService->getAllProduk($search, $searchExact);
 
         return view('produk.index', [
             'produks' => $produks

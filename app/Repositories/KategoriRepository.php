@@ -30,11 +30,11 @@ class KategoriRepository
     {
         // Pastikan kategori default "Tidak Berkategori" tersedia
         $defaultKategori = $this->getOrCreateDefaultKategori();
-        
+
         // Update semua produk yang menggunakan kategori ini ke kategori default
         \App\Models\Produk::where('kategori_id', $kategori->id)
             ->update(['kategori_id' => $defaultKategori->id]);
-        
+
         // Hapus kategori
         return $kategori->delete();
     }
@@ -43,13 +43,13 @@ class KategoriRepository
     {
         // Cari kategori default, jika tidak ada maka buat
         $defaultKategori = Kategori::where('nama_kategori', 'Tidak Berkategori')->first();
-        
+
         if (!$defaultKategori) {
             $defaultKategori = Kategori::create([
                 'nama_kategori' => 'Tidak Berkategori'
             ]);
         }
-        
+
         return $defaultKategori;
     }
 

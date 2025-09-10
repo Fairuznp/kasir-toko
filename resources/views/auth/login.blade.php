@@ -14,7 +14,7 @@
 
     <div class="login-box">
         <div class="login-logo">
-            <a href="/"><b>Madu</b>Jaya</a>
+            <a href="/"><b>Toko</b>Fairuz</a>
         </div>
 
         <div class="card">
@@ -26,7 +26,7 @@
                     <div class="input-group">
                         <input type="text" name="username"
                             class="form-control @error('username') is-invalid @enderror"
-                            placeholder="Username">
+                            placeholder="Username" autocomplete="off" value="">
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-envelope"></span>
@@ -42,7 +42,7 @@
                     <div class="input-group mt-3">
                         <input type="password" name="password"
                             class="form-control @error('password') is-invalid @enderror"
-                            placeholder="Password">
+                            placeholder="Password" autocomplete="off" value="">
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>

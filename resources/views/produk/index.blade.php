@@ -32,16 +32,28 @@
                         <i class="fas fa-plus mr-2"></i> Tambah
                     </a>
                 </div>
-                <form action="?" method="get" class="w-100 w-md-auto">
-                    <div class="input-group" style="max-width: 300px;">
-                        <input type="text" class="form-control form-control-sm" name="search" value="{{ request()->search }}" placeholder="Kode, Nama Produk">
-                        <div class="input-group-append">
-                            <button type="submit" class="btn btn-primary btn-sm">
-                                <i class="fas fa-search"></i>
-                            </button>
+                <div class="d-flex flex-column flex-md-row gap-2">
+                    <form action="?" method="get" class="w-100 w-md-auto mr-2">
+                        <div class="input-group" style="max-width: 300px;">
+                            <input type="text" class="form-control form-control-sm" name="search" value="{{ request()->search }}" placeholder="Kode, Nama Produk">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                    <form action="?" method="get" class="w-100 w-md-auto">
+                        <div class="input-group" style="max-width: 300px;">
+                            <input type="text" class="form-control form-control-sm" name="search_exact" value="{{ request()->search_exact }}" placeholder="Cari Nama Produk (Persis)">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-warning btn-sm" title="Cari Nama Persis">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 

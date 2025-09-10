@@ -18,9 +18,9 @@ class DiskonService
     {
         $diskons = $this->diskonRepository->getAllDiskon($search);
 
-    // foreach ($diskons as $diskon) {
-    //     $diskon->updateStatus();
-    // }
+        // foreach ($diskons as $diskon) {
+        //     $diskon->updateStatus();
+        // }
 
         if ($search) {
             $diskons->appends(['search' => $search]);
@@ -65,8 +65,8 @@ class DiskonService
             throw new \Exception('Kode diskon tidak ditemukan');
         }
 
-    // Perbarui status diskon sebelum validasi
-    // $diskon->updateStatus();
+        // Perbarui status diskon sebelum validasi
+        // $diskon->updateStatus();
 
         $validation = $diskon->isValid($subtotal, $items);
 
@@ -75,6 +75,18 @@ class DiskonService
         }
 
         $nilaiDiskon = $diskon->hitungNilaiDiskon($subtotal, $items);
+
+        // Tentukan info pada apa diskon diterapkan
+        $infoDiterapkan = '';
+        if ($diskon->produk_id) {
+            $produk = \App\Models\Produk::find($diskon->produk_id);
+            $infoDiterapkan = $produk ? 'produk ' . $produk->nama_produk : 'produk tertentu';
+        } elseif ($diskon->kategori_id) {
+            $kategori = \App\Models\Kategori::find($diskon->kategori_id);
+            $infoDiterapkan = $kategori ? 'kategori ' . $kategori->nama_kategori : 'kategori tertentu';
+        } else {
+            $infoDiterapkan = 'semua produk';
+        }
 
         // Simpan diskon ke cart extra info
         $extraInfo = $cart->getExtraInfo();
@@ -87,7 +99,7 @@ class DiskonService
         $cart->setExtraInfo($extraInfo);
 
         return [
-            'message' => $validation['message'],
+            'message' => $validation['message'] . ' (Diterapkan pada ' . $infoDiterapkan . ')',
             'nilai_diskon' => $nilaiDiskon
         ];
     }

@@ -20,12 +20,14 @@ class ProdukService
 
     public function getAllProduk($search = null)
     {
-        $produks = $this->produkRepository->getAllProdukWithKategori($search);
+        $produks = $this->produkRepository->getAllProdukWithKategori($search, func_num_args() > 1 ? func_get_arg(1) : null);
 
         if ($search) {
             $produks->appends(['search' => $search]);
         }
-
+        if (func_num_args() > 1 && func_get_arg(1)) {
+            $produks->appends(['search_exact' => func_get_arg(1)]);
+        }
         return $produks;
     }
 
@@ -33,9 +35,9 @@ class ProdukService
     {
         $dataKategori = $this->kategoriRepository->getKategoriForSelect();
 
-        $kategoris = [
-            '' => 'Pilih Kategori:'
-        ];
+        $kategoris = [];
+        // Opsi default
+        $kategoris[] = ['', '-- Pilih Kategori --'];
 
         foreach ($dataKategori as $kategori) {
             $kategoris[] = [$kategori->id, $kategori->nama_kategori];

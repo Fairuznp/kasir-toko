@@ -55,12 +55,20 @@ class ProdukRepository
 
     public function getAllProdukWithKategori($search = null)
     {
+        $args = func_get_args();
+        $search = $args[0] ?? null;
+        $searchExact = $args[1] ?? null;
         return Produk::join('kategoris', 'kategoris.id', 'produks.kategori_id')
             ->orderBy('produks.id')
             ->select('produks.*', 'nama_kategori')
             ->when($search, function ($q, $search) {
-                return $q->where('kode_produk', 'like', "%{$search}%")
-                    ->orWhere('nama_produk', 'like', "%{$search}%");
+                return $q->where(function($query) use ($search) {
+                    $query->where('kode_produk', 'like', "%{$search}%")
+                        ->orWhere('nama_produk', 'like', "%{$search}%");
+                });
+            })
+            ->when($searchExact, function ($q, $searchExact) {
+                return $q->where('nama_produk', $searchExact);
             })
             ->paginate();
     }

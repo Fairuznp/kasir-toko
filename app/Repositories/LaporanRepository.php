@@ -36,15 +36,21 @@ class LaporanRepository
     // Laporan produk terjual per bulan
     public function getLaporanProdukBulanan($bulan, $tahun)
     {
-        return DB::table('penjualans')
+        return DB::table('detil_penjualans')
+            ->join('produks', 'detil_penjualans.produk_id', '=', 'produks.id')
+            ->join('kategoris', 'produks.kategori_id', '=', 'kategoris.id')
+            ->join('penjualans', 'detil_penjualans.penjualan_id', '=', 'penjualans.id')
             ->select(
-                DB::raw('"Total Penjualan" as nama_produk'),
-                DB::raw('SUM(penjualans.total) as total_terjual')
+                'produks.nama_produk',
+                'kategoris.nama_kategori',
+                'produks.harga_jual',
+                DB::raw('SUM(detil_penjualans.jumlah) as total_terjual'),
+                DB::raw('SUM(detil_penjualans.subtotal) as total_pendapatan')
             )
             ->whereMonth('penjualans.tanggal', $bulan)
             ->whereYear('penjualans.tanggal', $tahun)
             ->where('penjualans.status', '!=', 'batal')
-            ->groupBy('penjualans.tanggal')
+            ->groupBy('produks.id', 'produks.nama_produk', 'kategoris.nama_kategori', 'produks.harga_jual')
             ->orderByDesc('total_terjual')
             ->get();
     }

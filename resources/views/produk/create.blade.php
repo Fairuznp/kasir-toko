@@ -29,6 +29,15 @@
                         </ul>
                     </div>
                 @endif
+
+                <div class="form-group">
+                    <label class="font-weight-semibold text-dark">
+                        <i class="fas fa-layer-group text-secondary mr-1"></i>
+                        Kategori
+                        <span class="text-danger">*</span>
+                    </label>
+                    <x-select name="kategori_id" :options="['' => '-- Pilih Kategori --'] + $kategoris" class="form-control-lg" />
+                </div>
                 
                 <div class="form-group">
                     <label class="font-weight-semibold text-dark">
@@ -127,14 +136,6 @@
                     </small>
                 </div>
                 
-                <div class="form-group">
-                    <label class="font-weight-semibold text-dark">
-                        <i class="fas fa-layer-group text-secondary mr-1"></i>
-                        Kategori
-                        <span class="text-danger">*</span>
-                    </label>
-                    <x-select name="kategori_id" :options="['' => '-- Pilih Kategori --'] + $kategoris" class="form-control-lg" />
-                </div>
             </div>
             
             <div class="card-footer bg-light border-top">
