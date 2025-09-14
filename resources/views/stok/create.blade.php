@@ -6,133 +6,88 @@
 @endsection
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-6 col-xl-4">
-        <form method="POST" action="{{ route('stok.store') }}" class="card card-orange card-outline shadow">
-            <div class="card-header bg-white border-bottom">
-                <h3 class="card-title mb-0">
-                    <i class="fas fa-plus-circle mr-2 text-orange"></i>
-                    Tambah Stok Barang
-                </h3>
-            </div>
-
-            <div class="card-body p-3 p-md-4">
+<div class="container mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-plus-circle mr-2"></i>
+                Tambah Stok Barang
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('stok.store') }}">
                 @csrf
-                
-                <div class="form-group">
-                    <label class="font-weight-semibold text-dark">
-                        <i class="fas fa-box text-info mr-1"></i>
-                        Nama Produk
-                        <span class="text-danger">*</span>
-                    </label>
-                    <div class="input-group">
-                        <input type="text" id="namaProduk" name="nama_produk"
-                            class="form-control form-control-lg @error('produk_id') is-invalid @enderror" 
-                            placeholder="Pilih produk..." disabled>
-
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#modalCari">
-                                <i class="fas fa-search"></i>
-                            </button>
+                <div id="produkList">
+                    <div class="produk-item border rounded p-3 mb-3">
+                        <div class="form-row align-items-center">
+                            <div class="col-md-6 mb-3">
+                                <label for="namaProduk" class="font-weight-bold">Nama Produk</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control nama-produk" placeholder="Pilih produk..." disabled>
+                                    <input type="hidden" name="produk_id[]" class="produk-id">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary btn-cari-produk" data-toggle="modal" data-target="#modalCari">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="jumlah" class="font-weight-bold">Jumlah</label>
+                                <input type="number" name="jumlah[]" class="form-control" placeholder="Masukkan jumlah stok">
+                            </div>
+                            <div class="col-md-2 text-right">
+                                <button type="button" class="btn btn-danger btn-remove-produk mt-4">Hapus</button>
+                            </div>
                         </div>
                     </div>
-                    @error('produk_id')
-                        <div class="invalid-feedback d-block">
-                            {{ $message }}
-                        </div>
-                    @enderror
-                    <input type="hidden" name="produk_id" id="produkId">
                 </div>
+                <button type="button" id="addProduk" class="btn btn-success mb-3">
+                    <i class="fas fa-plus mr-1"></i> Tambah Produk
+                </button>
 
                 <div class="form-group">
-                    <label class="font-weight-semibold text-dark">
-                        <i class="fas fa-sort-numeric-up text-success mr-1"></i>
-                        Jumlah
-                        <span class="text-danger">*</span>
-                    </label>
-                    <x-input name="jumlah" type="text" class="form-control-lg" placeholder="Masukkan jumlah stok" />
+                    <label for="namaSuplier" class="font-weight-bold">Nama Suplier</label>
+                    <input type="text" name="nama_suplier" class="form-control" placeholder="Masukkan nama suplier">
                 </div>
 
-                <div class="form-group">
-                    <label class="font-weight-semibold text-dark">
-                        <i class="fas fa-truck text-warning mr-1"></i>
-                        Nama Suplier
-                        <span class="text-danger">*</span>
-                    </label>
-                    <x-input name="nama_suplier" type="text" class="form-control-lg" placeholder="Masukkan nama suplier" />
+                <div class="text-right">
+                    <a href="{{ route('stok.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i> Batal
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> Simpan Stok
+                    </button>
                 </div>
-            </div>
-
-            <div class="card-footer bg-light border-top">
-                <div class="d-flex flex-column flex-md-row justify-content-between">
-                    <div class="mb-2 mb-md-0">
-                        <a href="{{ route('stok.index') }}" class="btn btn-secondary btn-block btn-md-inline">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Batal
-                        </a>
-                    </div>
-                    <div>
-                        <button type="submit" class="btn btn-primary btn-block btn-md-inline px-4">
-                            <i class="fas fa-save mr-2"></i>
-                            Simpan Stok
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
 <style>
-    .form-control-lg {
-        border-radius: 0.5rem;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control-lg:focus {
-        border-color: #fd7e14;
-        box-shadow: 0 0 0 0.2rem rgba(253, 126, 20, 0.25);
-    }
-    
     .card {
         border-radius: 1rem;
-        border: none;
-    }
-    
-    .card-header {
-        border-radius: 1rem 1rem 0 0 !important;
-    }
-    
-    .shadow {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-    }
-    
-    @media (max-width: 767.98px) {
-        .btn-block {
-            display: block;
-            width: 100%;
-        }
-        
-        .card-body {
-            padding: 1.5rem !important;
-        }
-        
-        .form-control-lg {
-            font-size: 16px; /* Prevent zoom on iOS */
-        }
     }
 
-    @media (min-width: 768px) {
-        .btn-md-inline {
-            display: inline-block;
-            width: auto;
-        }
+    .btn {
+        border-radius: 0.5rem;
     }
-    
-    .btn:hover {
-        transform: translateY(-1px);
-        transition: all 0.3s ease;
+
+    .form-control {
+        border-radius: 0.5rem;
+    }
+
+    .produk-item {
+        background-color: #f8f9fa;
+    }
+
+    .btn-remove-produk {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-remove-produk:hover {
+        background-color: #c82333;
     }
 </style>
 @endsection
@@ -191,6 +146,8 @@
 
 @push('scripts')
 <script>
+    let produkTarget = null;
+
     $(function () {
         $('#formSearch').submit(function (e) {
             e.preventDefault();
@@ -224,6 +181,25 @@
                     </tr>
                 `);
             }
+        });
+
+        $(document).on('click', '#addProduk', function() {
+            let newProduk = $('.produk-item:first').clone();
+            newProduk.find('input').val('');
+            $('#produkList').append(newProduk);
+        });
+
+        $(document).on('click', '.btn-remove-produk', function() {
+            if ($('.produk-item').length > 1) {
+                $(this).closest('.produk-item').remove();
+            } else {
+                alert('Minimal harus ada satu produk.');
+            }
+        });
+
+        // Simpan baris aktif saat klik cari produk
+        $(document).on('click', '.btn-cari-produk', function() {
+            produkTarget = $(this).closest('.produk-item');
         });
     });
 
@@ -276,15 +252,11 @@
     }
 
     function addProduk(id, nama_produk) {
-        $('#namaProduk').val(nama_produk);
-        $('#produkId').val(id);
+        if (produkTarget) {
+            produkTarget.find('.nama-produk').val(nama_produk);
+            produkTarget.find('.produk-id').val(id);
+        }
         $('#modalCari').modal('hide');
-        
-        // Show success feedback
-        $('#namaProduk').addClass('border-success');
-        setTimeout(() => {
-            $('#namaProduk').removeClass('border-success');
-        }, 2000);
     }
 </script>
 @endpush

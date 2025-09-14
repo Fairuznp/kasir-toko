@@ -39,14 +39,21 @@ class StokController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'produk_id' => ['required', 'exists:produks,id'],
-            'jumlah' => ['required', 'numeric'],
+            'produk_id.*' => ['required', 'exists:produks,id'],
+            'jumlah.*' => ['required', 'numeric'],
             'nama_suplier' => ['required', 'max:150']
         ], [], [
-            'produk_id' => 'Nama produk'
+            'produk_id.*' => 'Nama produk',
+            'jumlah.*' => 'Jumlah stok'
         ]);
 
-        $this->stokService->createStok($request->all());
+        foreach ($request->produk_id as $index => $produkId) {
+            $this->stokService->createStok([
+                'produk_id' => $produkId,
+                'jumlah' => $request->jumlah[$index],
+                'nama_suplier' => $request->nama_suplier
+            ]);
+        }
 
         return redirect()->route('stok.index')->with('store', 'success');
     }

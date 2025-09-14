@@ -95,6 +95,8 @@
                                         Kategori: {{ $diskon->kategori->nama_kategori }}
                                     @elseif($diskon->produk_id)
                                         Produk: {{ $diskon->produk->nama_produk }}
+                                        <br>
+                                        <small class="text-muted">Kategori: {{ $diskon->produk->kategori->nama_kategori ?? '-' }}</small>
                                     @else
                                         Semua Produk
                                     @endif
@@ -166,7 +168,8 @@
                                         @if($diskon->kategori_id)
                                             Kategori: {{ $diskon->kategori->nama_kategori }}
                                         @elseif($diskon->produk_id)
-                                            Produk: {{ $diskon->produk->nama_produk }}
+                                            Produk: {{ $diskon->produk->nama_produk }}<br>
+                                            <small class="text-muted">Kategori: {{ $diskon->produk->kategori->nama_kategori ?? '-' }}</small>
                                         @else
                                             Semua Produk
                                         @endif
