@@ -69,4 +69,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/produk/qrcode/{kode}', [App\Http\Controllers\ProdukController::class, 'downloadQr'])->name('produk.qr.download');
     Route::resource('diskon', DiskonController::class);
     Route::post('terapkan-diskon', [DiskonController::class, 'terapkanDiskon'])->name('diskon.terapkan');
+    Route::post('hapus-diskon', [DiskonController::class, 'hapusDiskon'])->name('diskon.hapus');
 });

@@ -278,4 +278,13 @@ class Diskon extends Model
 
         return true;
     }
+
+    public function hitungNilaiDiskonItem($itemSubtotal)
+    {
+        if ($this->jenis_diskon == 'persen') {
+            return $itemSubtotal * $this->jumlah_diskon / 100;
+        } else {
+            return min($this->jumlah_diskon, $itemSubtotal);
+        }
+    }
 }

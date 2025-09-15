@@ -30,61 +30,112 @@ class CartService
         // Hitung diskon jika ada dan valid
         $discountAmount = 0;
         $response = $cartDetails->toArray();
-        if (isset($extraInfo['diskon'])) {
-            $diskon = \App\Models\Diskon::find($extraInfo['diskon']['id']);
-            if ($diskon) {
+        
+        // Inisialisasi diskon_applied dan harga_setelah_diskon untuk semua item
+        if (isset($response['items']) && is_array($response['items'])) {
+            foreach ($response['items'] as $i => $item) {
+                $response['items'][$i]['diskon_applied'] = false;
+                $response['items'][$i]['harga_setelah_diskon'] = $item['price'];
+                $response['items'][$i]['original_subtotal'] = $item['subtotal'];
+            }
+        }
+
+        if (isset($extraInfo['diskons']) && is_array($extraInfo['diskons'])) {
+            // Kelompokkan diskon berdasarkan tipe
+            $diskonProduk = [];
+            $diskonKategori = [];
+            $diskonGlobal = [];
+
+            foreach ($extraInfo['diskons'] as $diskonData) {
+                $diskon = \App\Models\Diskon::find($diskonData['id']);
+                if (!$diskon) continue;
+
                 $validation = $diskon->isValid($cartDetails->get('subtotal'), $cartDetails->get('items'));
-                if ($validation['valid']) {
-                    // Jika diskon khusus produk/kategori
-                    if ($diskon->produk_id || $diskon->kategori_id) {
-                        // Kurangi subtotal produk yang didiskon
-                        $items = $response['items'];
-                        foreach ($items as $i => $item) {
-                            $produk = \App\Models\Produk::find($item['id']);
-                            $isEligible = false;
-                            if ($diskon->produk_id && $produk && $produk->id == $diskon->produk_id) {
-                                $isEligible = true;
-                            } elseif ($diskon->kategori_id && $produk && $produk->kategori_id == $diskon->kategori_id) {
-                                $isEligible = true;
-                            }
-                            if ($isEligible && $item['quantity'] * $item['price'] >= $diskon->minimal_pembelian) {
-                                $nilaiDiskon = ($item['quantity'] * $item['price']) * $diskon->jumlah_diskon / 100;
-                                $response['items'][$i]['subtotal'] -= $nilaiDiskon;
-                                $response['items'][$i]['diskon_applied'] = true;
-                                $response['items'][$i]['harga_setelah_diskon'] = $item['price'] - ($item['price'] * $diskon->jumlah_diskon / 100);
-                            } else {
-                                $response['items'][$i]['diskon_applied'] = false;
-                                $response['items'][$i]['harga_setelah_diskon'] = $item['price'];
-                            }
-                        }
-                        $response['discount_amount'] = 0; // Diskon tidak ditampilkan di bawah pajak
-                        // Hitung ulang subtotal
-                        $response['subtotal'] = array_sum(array_column($response['items'], 'subtotal'));
-                        // Pajak tetap dari subtotal baru
-                        $response['total'] = $response['subtotal'] + ($response['tax_amount'] ?? 0);
-                    } else {
-                        // Diskon untuk semua produk
-                        $discountAmount = $diskon->hitungNilaiDiskon($cartDetails->get('subtotal'), $cartDetails->get('items'));
-                        $response['discount_amount'] = $discountAmount;
-                        if ($discountAmount > 0) {
-                            $response['total'] = $response['total'] - $discountAmount;
-                        }
-                    }
+                if (!$validation['valid']) continue;
+
+                if ($diskon->produk_id) {
+                    $diskonProduk[$diskon->produk_id][] = $diskon;
+                } elseif ($diskon->kategori_id) {
+                    $diskonKategori[$diskon->kategori_id][] = $diskon;
                 } else {
-                    // Diskon tidak valid lagi, hapus dari extra_info
-                    unset($extraInfo['diskon']);
-                    $cart->setExtraInfo($extraInfo);
+                    $diskonGlobal[] = $diskon;
                 }
+            }
+
+            // Hitung diskon per item
+            $totalDiskonAmount = 0;
+            if (isset($response['items']) && is_array($response['items'])) {
+                foreach ($response['items'] as $i => $item) {
+                    $produk = \App\Models\Produk::find($item['id']);
+                    if (!$produk) continue;
+
+                    $itemSubtotal = $item['quantity'] * $item['price'];
+                    $itemDiskon = 0;
+
+                    // 1. Cek diskon produk (ambil yang terbesar)
+                    if (isset($diskonProduk[$produk->id])) {
+                        $maxDiskon = 0;
+                        foreach ($diskonProduk[$produk->id] as $diskon) {
+                            $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+                            if ($nilaiDiskon > $maxDiskon) {
+                                $maxDiskon = $nilaiDiskon;
+                            }
+                        }
+                        $itemDiskon += $maxDiskon;
+                    }
+
+                    // 2. Cek diskon kategori (ambil yang terbesar)
+                    if (isset($diskonKategori[$produk->kategori_id])) {
+                        $maxDiskon = 0;
+                        foreach ($diskonKategori[$produk->kategori_id] as $diskon) {
+                            $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+                            if ($nilaiDiskon > $maxDiskon) {
+                                $maxDiskon = $nilaiDiskon;
+                            }
+                        }
+                        $itemDiskon += $maxDiskon;
+                    }
+
+                    // 3. Cek diskon global (ambil yang terbesar)
+                    if (!empty($diskonGlobal)) {
+                        $maxDiskon = 0;
+                        foreach ($diskonGlobal as $diskon) {
+                            $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+                            if ($nilaiDiskon > $maxDiskon) {
+                                $maxDiskon = $nilaiDiskon;
+                            }
+                        }
+                        $itemDiskon += $maxDiskon;
+                    }
+
+                    // Update item dengan diskon
+                    if ($itemDiskon > 0) {
+                        $response['items'][$i]['subtotal'] = $itemSubtotal - $itemDiskon;
+                        $response['items'][$i]['diskon_applied'] = true;
+                        $response['items'][$i]['harga_setelah_diskon'] = $item['price'] - ($itemDiskon / $item['quantity']);
+                        $totalDiskonAmount += $itemDiskon;
+                    }
+                }
+            }
+
+            $response['discount_amount'] = $totalDiskonAmount;
+            
+            // Hitung ulang subtotal dan total
+            if ($totalDiskonAmount > 0) {
+                $newSubtotal = array_sum(array_column($response['items'], 'subtotal'));
+                $response['subtotal'] = $newSubtotal;
+                $response['total'] = $newSubtotal + ($response['tax_amount'] ?? 0);
             }
         } else {
             $response['discount_amount'] = 0;
         }
 
-        // Tambahkan informasi stok untuk setiap item
+        // Tambahkan informasi stok dan kategori untuk setiap item
         if (isset($response['items']) && is_array($response['items'])) {
             foreach ($response['items'] as $i => $item) {
                 $produk = $this->produkRepository->getProdukById($item['id']);
                 $response['items'][$i]['stok'] = $produk ? $produk->stok : 0;
+                $response['items'][$i]['nama_kategori'] = $produk && $produk->kategori ? $produk->kategori->nama_kategori : '-';
             }
         }
 

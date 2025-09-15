@@ -88,19 +88,73 @@ class DiskonService
             $infoDiterapkan = 'semua produk';
         }
 
-        // Simpan diskon ke cart extra info
+        // Simpan diskon ke cart extra info (mendukung multiple diskon)
         $extraInfo = $cart->getExtraInfo();
-        $extraInfo['diskon'] = [
+        if (!isset($extraInfo['diskons'])) {
+            $extraInfo['diskons'] = [];
+        }
+
+        // Cek apakah diskon sudah diterapkan
+        $sudahAda = false;
+        foreach ($extraInfo['diskons'] as $existingDiskon) {
+            if ($existingDiskon['id'] == $diskon->id) {
+                $sudahAda = true;
+                break;
+            }
+        }
+
+        if ($sudahAda) {
+            throw new \Exception('Diskon sudah diterapkan');
+        }
+
+        // Tambahkan diskon baru
+        $extraInfo['diskons'][] = [
             'id' => $diskon->id,
             'kode_diskon' => $diskon->kode_diskon,
-            'nilai_diskon' => $nilaiDiskon
+            'nilai_diskon' => $nilaiDiskon,
+            'produk_id' => $diskon->produk_id,
+            'kategori_id' => $diskon->kategori_id
         ];
 
         $cart->setExtraInfo($extraInfo);
 
         return [
             'message' => $validation['message'] . ' (Diterapkan pada ' . $infoDiterapkan . ')',
-            'nilai_diskon' => $nilaiDiskon
+            'nilai_diskon' => $nilaiDiskon,
+            'applied_discounts' => $extraInfo['diskons']
+        ];
+    }
+
+    public function hapusDiskon($kodeDiskon, $userId)
+    {
+        $cart = Cart::name($userId);
+        $extraInfo = $cart->getExtraInfo();
+
+        if (!isset($extraInfo['diskons'])) {
+            throw new \Exception('Tidak ada diskon yang diterapkan');
+        }
+
+        // Hapus diskon berdasarkan kode
+        $diskons = $extraInfo['diskons'];
+        $found = false;
+        foreach ($diskons as $key => $diskon) {
+            if ($diskon['kode_diskon'] == $kodeDiskon) {
+                unset($diskons[$key]);
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            throw new \Exception('Diskon tidak ditemukan');
+        }
+
+        // Update cart extra info
+        $extraInfo['diskons'] = array_values($diskons); // Reset array keys
+        $cart->setExtraInfo($extraInfo);
+
+        return [
+            'applied_discounts' => $extraInfo['diskons']
         ];
     }
 }

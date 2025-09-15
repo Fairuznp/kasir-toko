@@ -66,8 +66,6 @@
             <div class="text-center mt-5">
                 <div>Dicetak pada: {{ date('d/m/Y H:i:s') }}</div>
                 <div class="mt-5">
-                    _______________________<br>
-                    Petugas
                 </div>
             </div>
         </div>

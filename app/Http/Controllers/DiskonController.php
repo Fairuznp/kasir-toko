@@ -100,7 +100,33 @@ class DiskonController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $result['message'],
-                'nilai_diskon' => $result['nilai_diskon']
+                'nilai_diskon' => $result['nilai_diskon'],
+                'applied_discounts' => $result['applied_discounts']
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function hapusDiskon(Request $request)
+    {
+        $request->validate([
+            'kode_diskon' => 'required'
+        ]);
+
+        try {
+            $result = $this->diskonService->hapusDiskon(
+                $request->kode_diskon,
+                $request->user()->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Diskon berhasil dihapus',
+                'applied_discounts' => $result['applied_discounts']
             ]);
         } catch (\Exception $e) {
             return response()->json([

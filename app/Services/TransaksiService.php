@@ -44,27 +44,80 @@ class TransaksiService
 
     public function calculateDiscount($extraInfo, $subtotal, $allItems)
     {
-        $diskonId = null;
-        $nilaiDiskon = 0;
+        $totalNilaiDiskon = 0;
+        $appliedDiscounts = [];
 
-        if (isset($extraInfo['diskon'])) {
-            $diskon = Diskon::find($extraInfo['diskon']['id']);
-            if ($diskon) {
-                // PERBAIKAN: Validasi berdasarkan subtotal yang memenuhi syarat
-                $eligibleSubtotal = $diskon->getEligibleSubtotal($allItems);
+        if (isset($extraInfo['diskons']) && is_array($extraInfo['diskons'])) {
+            // Kelompokkan diskon berdasarkan tipe (produk, kategori, global)
+            $diskonProduk = [];
+            $diskonKategori = [];
+            $diskonGlobal = [];
 
-                // Untuk validasi minimal pembelian, gunakan total subtotal
+            foreach ($extraInfo['diskons'] as $diskonData) {
+                $diskon = Diskon::find($diskonData['id']);
+                if (!$diskon) continue;
+
                 $validation = $diskon->isValid($subtotal, $allItems);
+                if (!$validation['valid']) continue;
 
-                if ($validation['valid']) {
-                    $diskonId = $diskon->id;
-                    // PERBAIKAN: Hitung diskon berdasarkan items yang memenuhi syarat
-                    $nilaiDiskon = $diskon->hitungNilaiDiskon($subtotal, $allItems);
+                if ($diskon->produk_id) {
+                    $diskonProduk[$diskon->produk_id][] = $diskon;
+                } elseif ($diskon->kategori_id) {
+                    $diskonKategori[$diskon->kategori_id][] = $diskon;
+                } else {
+                    $diskonGlobal[] = $diskon;
                 }
+            }
+
+            // Hitung diskon per item
+            foreach ($allItems as $item) {
+                $produk = Produk::find($item->id);
+                if (!$produk) continue;
+
+                $itemSubtotal = $item->quantity * $item->price;
+                $itemDiskon = 0;
+
+                // 1. Cek diskon produk (ambil yang terbesar)
+                if (isset($diskonProduk[$produk->id])) {
+                    $maxDiskon = 0;
+                    foreach ($diskonProduk[$produk->id] as $diskon) {
+                        $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+                        if ($nilaiDiskon > $maxDiskon) {
+                            $maxDiskon = $nilaiDiskon;
+                        }
+                    }
+                    $itemDiskon += $maxDiskon;
+                }
+
+                // 2. Cek diskon kategori (ambil yang terbesar)
+                if (isset($diskonKategori[$produk->kategori_id])) {
+                    $maxDiskon = 0;
+                    foreach ($diskonKategori[$produk->kategori_id] as $diskon) {
+                        $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+                        if ($nilaiDiskon > $maxDiskon) {
+                            $maxDiskon = $nilaiDiskon;
+                        }
+                    }
+                    $itemDiskon += $maxDiskon;
+                }
+
+                // 3. Cek diskon global (ambil yang terbesar)
+                if (!empty($diskonGlobal)) {
+                    $maxDiskon = 0;
+                    foreach ($diskonGlobal as $diskon) {
+                        $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+                        if ($nilaiDiskon > $maxDiskon) {
+                            $maxDiskon = $nilaiDiskon;
+                        }
+                    }
+                    $itemDiskon += $maxDiskon;
+                }
+
+                $totalNilaiDiskon += $itemDiskon;
             }
         }
 
-        return ['diskon_id' => $diskonId, 'nilai_diskon' => $nilaiDiskon];
+        return ['diskon_id' => null, 'nilai_diskon' => $totalNilaiDiskon, 'applied_discounts' => $appliedDiscounts];
     }
 
     public function generateTransactionNumber()
@@ -113,14 +166,19 @@ class TransaksiService
             'nilai_diskon' => (int) $discount['nilai_diskon'],
         ]);
 
-        // Get the active discount if any
-        $diskon = null;
-        if (isset($extraInfo['diskon'])) {
-            $diskon = Diskon::find($extraInfo['diskon']['id']);
+        // Get applied discounts
+        $appliedDiscounts = [];
+        if (isset($extraInfo['diskons']) && is_array($extraInfo['diskons'])) {
+            foreach ($extraInfo['diskons'] as $diskonData) {
+                $diskon = Diskon::find($diskonData['id']);
+                if ($diskon) {
+                    $appliedDiscounts[] = $diskon;
+                }
+            }
         }
 
         foreach ($allItems as $item) {
-            $itemDiskonData = $this->calculateItemDiscount($item, $diskon);
+            $itemDiskonData = $this->calculateItemDiscountMultiple($item, $appliedDiscounts);
 
             $this->transaksiRepository->createDetilPenjualan([
                 'penjualan_id' => $penjualan->id,
@@ -136,8 +194,8 @@ class TransaksiService
             $this->produkRepository->updateStock($item->id, -$item->quantity);
         }
 
-        // Increment usage count for discount if used
-        if ($diskon) {
+        // Increment usage count for discounts if used
+        foreach ($appliedDiscounts as $diskon) {
             $diskon->incrementUsage();
         }
 
@@ -194,6 +252,88 @@ class TransaksiService
                 'nama_diskon' => $diskon->kode_diskon,
                 'nilai_diskon' => $diskon->jumlah_diskon,
                 'nilai_diskon_rupiah' => $discountAmount
+            ];
+        }
+
+        return $result;
+    }
+
+    protected function calculateItemDiscountMultiple($item, $appliedDiscounts)
+    {
+        $result = [
+            'diskon_id' => null,
+            'nama_diskon' => null,
+            'nilai_diskon' => 0,
+            'nilai_diskon_rupiah' => 0
+        ];
+
+        if (empty($appliedDiscounts)) {
+            return $result;
+        }
+
+        $produk = Produk::find($item->id);
+        if (!$produk) {
+            return $result;
+        }
+
+        $itemSubtotal = $item->quantity * $item->price;
+        $totalDiskonRupiah = 0;
+        $namaDiskon = [];
+
+        // Kelompokkan diskon berdasarkan tipe
+        $diskonProduk = [];
+        $diskonKategori = [];
+        $diskonGlobal = [];
+
+        foreach ($appliedDiscounts as $diskon) {
+            if ($diskon->produk_id == $produk->id) {
+                $diskonProduk[] = $diskon;
+            } elseif ($diskon->kategori_id == $produk->kategori_id) {
+                $diskonKategori[] = $diskon;
+            } elseif (!$diskon->produk_id && !$diskon->kategori_id) {
+                $diskonGlobal[] = $diskon;
+            }
+        }
+
+        // Ambil diskon terbesar dari setiap kategori
+        $maxDiskonProduk = 0;
+        $maxDiskonKategori = 0;
+        $maxDiskonGlobal = 0;
+
+        foreach ($diskonProduk as $diskon) {
+            $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+            if ($nilaiDiskon > $maxDiskonProduk) {
+                $maxDiskonProduk = $nilaiDiskon;
+            }
+        }
+
+        foreach ($diskonKategori as $diskon) {
+            $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+            if ($nilaiDiskon > $maxDiskonKategori) {
+                $maxDiskonKategori = $nilaiDiskon;
+            }
+        }
+
+        foreach ($diskonGlobal as $diskon) {
+            $nilaiDiskon = $diskon->hitungNilaiDiskonItem($itemSubtotal);
+            if ($nilaiDiskon > $maxDiskonGlobal) {
+                $maxDiskonGlobal = $nilaiDiskon;
+            }
+        }
+
+        $totalDiskonRupiah = $maxDiskonProduk + $maxDiskonKategori + $maxDiskonGlobal;
+
+        if ($totalDiskonRupiah > 0) {
+            // Ambil nama diskon untuk keterangan
+            if (!empty($diskonProduk)) $namaDiskon[] = 'Produk';
+            if (!empty($diskonKategori)) $namaDiskon[] = 'Kategori';
+            if (!empty($diskonGlobal)) $namaDiskon[] = 'Global';
+
+            return [
+                'diskon_id' => null,
+                'nama_diskon' => implode(', ', $namaDiskon),
+                'nilai_diskon' => round(($totalDiskonRupiah / $itemSubtotal) * 100, 2),
+                'nilai_diskon_rupiah' => $totalDiskonRupiah
             ];
         }
 

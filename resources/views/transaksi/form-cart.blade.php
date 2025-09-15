@@ -90,7 +90,7 @@
 
         <!-- Form Diskon -->
         <div class="row mt-3">
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-8">
                 <div class="form-group">
                     <label class="form-label">Kode Diskon</label>
                     <div class="input-group">
@@ -105,6 +105,12 @@
                     </div>
                     <div id="diskonError" class="text-danger mt-2 small" style="display: none;"></div>
                     <div id="diskonSuccess" class="text-success mt-2 small" style="display: none;"></div>
+                    
+                    <!-- Daftar Diskon yang Diterapkan -->
+                    <div id="appliedDiscounts" class="mt-3" style="display: none;">
+                        <label class="form-label">Diskon yang Diterapkan:</label>
+                        <div id="discountList"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -248,6 +254,13 @@
                 $('#pelangganId').val(id);
             }
 
+            // Update applied discounts display
+            if (extra_info && extra_info.diskons) {
+                updateAppliedDiscounts(extra_info.diskons);
+            } else {
+                updateAppliedDiscounts([]);
+            }
+
             for (const property in items) {
                 addRow(items[property]);
             }
@@ -278,18 +291,22 @@
                     </div>`;
 
         let subtotalTampil = `${rupiah(subtotal)}`;
+        let hargaTampil = `${rupiah(price)}`;
+        
         if (diskon_applied && harga_setelah_diskon < price) {
-            const subtotalSebelumDiskon = price * quantity;
+            const subtotalSebelumDiskon = item.original_subtotal || (price * quantity);
             subtotalTampil = `<span style='text-decoration:line-through;color:#dc3545'>${rupiah(subtotalSebelumDiskon)}</span> <span class='text-success font-weight-bold'>${rupiah(subtotal)}</span>`;
+            hargaTampil = `<span style='text-decoration:line-through;color:#dc3545'>${rupiah(price)}</span> <span class='text-success font-weight-bold'>${rupiah(harga_setelah_diskon)}</span>`;
         }
 
         const row = `<tr>
                         <td>
                             <div>${title}</div>
-                            <small class="text-muted d-sm-none">${rupiah(price)} x ${quantity}</small>
+                            <div><small class='text-info'>${item.nama_kategori ? item.nama_kategori : '-'}</small></div>
+                            <small class="text-muted d-sm-none">${hargaTampil} x ${quantity}</small>
                         </td>
                         <td class="text-center">${quantity}x</td>
-                        <td class="text-right d-none d-sm-table-cell">${rupiah(price)}</td>
+                        <td class="text-right d-none d-sm-table-cell">${hargaTampil}</td>
                         <td class="text-right font-weight-bold">${subtotalTampil}</td>
                         <td class="text-center">${btn}</td>
                     </tr>`;
@@ -529,6 +546,8 @@
             success: function(response) {
                 if (response.success) {
                     showDiskonSuccess(response.message);
+                    $('#kodeDiskon').val(''); // Clear input after success
+                    updateAppliedDiscounts(response.applied_discounts);
                     fetchCart(); // Refresh cart
                 } else {
                     showDiskonError(response.message);
@@ -537,6 +556,42 @@
             error: function(xhr) {
                 const response = xhr.responseJSON;
                 showDiskonError(response.message || 'Terjadi kesalahan');
+            }
+        });
+    }
+
+    function updateAppliedDiscounts(discounts) {
+        if (discounts && discounts.length > 0) {
+            $('#appliedDiscounts').show();
+            let html = '';
+            discounts.forEach(function(discount) {
+                html += `<div class="badge badge-success mr-2 mb-2">
+                    ${discount.kode_diskon} 
+                    <button type="button" class="btn btn-sm p-0 ml-1" onclick="hapusDiskon('${discount.kode_diskon}')" style="color: white;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>`;
+            });
+            $('#discountList').html(html);
+        } else {
+            $('#appliedDiscounts').hide();
+        }
+    }
+
+    function hapusDiskon(kodeDiskon) {
+        $.ajax({
+            type: "POST",
+            url: "/hapus-diskon",
+            data: { 
+                kode_diskon: kodeDiskon,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    updateAppliedDiscounts(response.applied_discounts);
+                    fetchCart(); // Refresh cart
+                }
             }
         });
     }

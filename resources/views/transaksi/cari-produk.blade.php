@@ -103,7 +103,7 @@
     }
 
     function addResultProduk(item) {
-        const { nama_produk, kode_produk, stok } = item;
+        const { nama_produk, kode_produk, stok, nama_kategori } = item;
 
         // Disable button jika stok habis
         const isOutOfStock = stok <= 0;
@@ -127,7 +127,7 @@
         if (stok <= 0) stokColor = 'text-danger';
         else if (stok <= 5) stokColor = 'text-warning';
 
-        const rowClick = isOutOfStock ? '' : `onclick="addItem('${kode_produk}')"`;
+        const rowClick = isOutOfStock ? '' : `onclick=\"addItem('${kode_produk}')\"`;
         const cursorClass = isOutOfStock ? '' : 'cursor-pointer';
 
         const row = `<tr class="${cursorClass}" ${rowClick}>
@@ -135,6 +135,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="flex-grow-1">
                                     <strong>${nama_produk}</strong>
+                                    <div><small class="text-info">${nama_kategori ? nama_kategori : '-'}</small></div>
                                     <div class="d-flex justify-content-between">
                                         <small class="text-muted">Kode: ${kode_produk}</small>
                                         <small class="${stokColor}">Stok: ${stok}</small>

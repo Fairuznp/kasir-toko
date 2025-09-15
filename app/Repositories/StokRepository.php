@@ -20,10 +20,11 @@ class StokRepository
 
     public function searchProduk($search)
     {
-        return Produk::select('id', 'nama_produk')
-            ->where('nama_produk', 'like', "%{$search}%")
+        return Produk::join('kategoris', 'kategoris.id', '=', 'produks.kategori_id')
+            ->select('produks.id', 'produks.nama_produk', 'produks.kode_produk', 'produks.stok', 'kategoris.nama_kategori')
+            ->where('produks.nama_produk', 'like', "%{$search}%")
             ->take(15)
-            ->orderBy('nama_produk')
+            ->orderBy('produks.nama_produk')
             ->get();
     }
 
